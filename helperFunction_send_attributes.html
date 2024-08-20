@@ -1,149 +1,151 @@
 <script>
-    (function() {
+  (function() {
       // Helper function to get and parse dataset gtmBody
       function getGtmBodyData(element) {
-        if (!element) {
-          return null;
-        }
-        var data = element ? JSON.parse(element.dataset.gtmBody) : null;
-        if (!data) {
-          return null;
-        }
-        return data;
+          if (!element) {
+              return null;
+          }
+          var data = element ? JSON.parse(element.dataset.gtmBody) : null;
+          if (!data) {
+              return null;
+          }
+          return data;
       }
-  
+
       // page-title depth parser
       function parsePageTitle(title) {
-        var parts = title.split('>');
-        var depth = {};
-  
-        // Assigning depths based on the given requirements
-        depth['1depth'] = parts[0] || '';
-        depth['2depth'] = parts[1] || '';
-        depth['3depth'] = parts[2] || '';
-        depth['4depth'] = parts[3] || '';
-  
-        // Joining the remaining parts for 5depth and beyond
-        if (parts.length > 4) {
-          depth['5depth'] = parts.slice(4).join('>');
-        } else {
-          depth['5depth'] = '';
-        }
-  
-        return depth;
+          var parts = title.split('>');
+          var depth = {};
+
+          // Assigning depths based on the given requirements
+          depth['1depth'] = parts[0] || '';
+          depth['2depth'] = parts[1] || '';
+          depth['3depth'] = parts[2] || '';
+          depth['4depth'] = parts[3] || '';
+
+          // Joining the remaining parts for 5depth and beyond
+          if (parts.length > 4) {
+              depth['5depth'] = parts.slice(4).join('>');
+          } else {
+              depth['5depth'] = '';
+          }
+
+          return depth;
       }
-  
+
       // Main function to handle different events
       function handleEvent(element, eventType) {
-        // page
-        var pageElement = document.querySelector('[data-gtm-page]');
-        var pageData = getGtmBodyData(pageElement);
-        var depthData = parsePageTitle(pageData.page_title);
-        pageData = Object.assign({}, pageData, depthData);
-        if (!pageData) return;
-  
-        // section
-        var sectionElement = element.closest('[data-gtm-section]');
-        var sectionData = getGtmBodyData(sectionElement) || {};
-  
-        // Add event to sectionData based on isPopup value
-        var isPopup = sectionData.isPopup;
-        var eventSuffix = eventType === 'visibility' ? 'view' : eventType;
-  
-        // visibility or click
-        var eventElement = element.closest('[data-gtm-' + eventType + ']');
-        var eventData = getGtmBodyData(eventElement);
-        if (!eventData) return;
-  
-        // Combine data into the desired structure
-        var combinedData = {
-          event: (isPopup ? 'popup_' : 'cts_') + eventSuffix,
-          pageData: pageData,
-          sectionData: sectionData,
-          eventData: eventData
-        };
-  
-        // Push to dataLayer
-        console.log(eventType);
-        console.log(combinedData);
-        dataLayer.push(combinedData);
-  
-        return combinedData;
+          // page
+          var pageElement = document.querySelector('[data-gtm-page]');
+          var pageData = getGtmBodyData(pageElement);
+          var depthData = parsePageTitle(pageData.page_title);
+          pageData = Object.assign({}, pageData, depthData);
+          if (!pageData) return;
+
+          // section
+          var sectionElement = element.closest('[data-gtm-section]');
+          var sectionData = getGtmBodyData(sectionElement) || {};
+
+          // Add event to sectionData based on isPopup value
+          var isPopup = sectionData.isPopup;
+          var eventSuffix = eventType === 'visibility' ? 'view' : eventType;
+
+          // Determine if eventType is related to eCommerce
+          var isEcommerceEvent = ['view-item-list', 'select-item', 'view-item', 'add-to-cart', 'begin-checkout', 'purchase', 'refund'].includes(eventType);
+
+          // visibility or click or eCommerce
+          var eventElement = element.closest('[data-gtm-' + (isEcommerceEvent ? 'ecommerce' : eventType) + ']');
+          var eventData = getGtmBodyData(eventElement);
+          if (!eventData) return;
+
+          // Combine data into the desired structure
+          var combinedData = {
+              event: (isPopup ? 'popup_' : 'cts_') + eventType,
+              pageData: pageData,
+              sectionData: sectionData,
+              eventData: eventData
+          };
+
+          // Push to dataLayer
+          console.log(eventType);
+          console.log(combinedData);
+          dataLayer.push(combinedData);
+
+          return combinedData;
       }
-  
+
       // 앱 구분자 설정
       var browserInfo = navigator.userAgent;
       var isGAAndroid = browserInfo.indexOf('GA_Android') > -1;
       var isGAIOS = browserInfo.indexOf('GA_iOS_WK') > -1;
       var commonGAData = {};
-  
+
       // 빈값 제거 함수
       function removeEmptyElement(removeValue) {
-        var returnValue = {};
-        for (var key in removeValue) {
-          if (removeValue[key] !== '' && removeValue[key] !== null && removeValue[key] !== undefined) {
-            returnValue[key] = removeValue[key];
+          var returnValue = {};
+          for (var key in removeValue) {
+              if (removeValue[key] !== '' && removeValue[key] !== null && removeValue[key] !== undefined) {
+                  returnValue[key] = removeValue[key];
+              }
           }
-        }
-        
-        return returnValue;
+          
+          return returnValue;
       }
-  
+
       // 앱으로 데이터 전달 함수
       function sendGAHybrid(object) {
-        try {
-          var GAData;
-          if (object.event_name == 'screen_view') {
-            GAData = Object.assign({}, object);
-          } else {
-            var eventParams = Object.assign({}, commonGAData.eventParams, object.eventParams);
-            var userProperties = Object.assign({}, commonGAData.userProperties, object.userProperties);
-            delete object.eventParams;
-            delete object.userProperties;
-            GAData = Object.assign({}, object, { screen_name: commonGAData.screen_name, location: commonGAData.location, eventParams: eventParams, userProperties: userProperties });
+          try {
+              var GAData;
+              if (object.event_name == 'screen_view') {
+                  GAData = Object.assign({}, object);
+              } else {
+                  var eventParams = Object.assign({}, commonGAData.eventParams, object.eventParams);
+                  var userProperties = Object.assign({}, commonGAData.userProperties, object.userProperties);
+                  delete object.eventParams;
+                  delete object.userProperties;
+                  GAData = Object.assign({}, object, { screen_name: commonGAData.screen_name, location: commonGAData.location, eventParams: eventParams, userProperties: userProperties });
+              }
+
+              isGAAndroid ? window.lotteCardgascriptAndroid.GAHybrid(JSON.stringify(GAData)) : webkit.messageHandlers.lotteCardgascriptCallbackHandler.postMessage(JSON.stringify(GAData));
+          } catch (e) {
+              console.log('sendGAHybrid 함수 ERROR');
+              console.log(e.message);
           }
-  
-          isGAAndroid ? window.lotteCardgascriptAndroid.GAHybrid(JSON.stringify(GAData)) : webkit.messageHandlers.lotteCardgascriptCallbackHandler.postMessage(JSON.stringify(GAData));
-        } catch (e) {
-          console.log('sendGAHybrid 함수 ERROR');
-          console.log(e.message);
-        }
       }
-  
+
       // 스크린뷰 전송 함수
       function sendGAPage(object) {
-        try {
-          object = removeEmptyElement(object);
-          commonGAData = Object.assign({}, object);
-          object.event_name = "screen_view"
-          sendGAHybrid(object);
-        } catch (e) {
-          console.log('sendGAPage 함수 ERROR');
-          console.log(e.message);
-        }
+          try {
+              object = removeEmptyElement(object);
+              commonGAData = Object.assign({}, object);
+              object.event_name = "screen_view"
+              sendGAHybrid(object);
+          } catch (e) {
+              console.log('sendGAPage 함수 ERROR');
+              console.log(e.message);
+          }
       }
-  
+
       // 스크린뷰 외 이벤트 전송 함수
       function sendGAEvent(object) {
-        try {
-          var GAData = removeEmptyElement(object);
-          sendGAHybrid(GAData);
-        } catch (e) {
-          console.log('sendGAEvent 함수 ERROR');
-          console.log(e.message);
-        }
+          try {
+              var GAData = removeEmptyElement(object);
+              sendGAHybrid(GAData);
+          } catch (e) {
+              console.log('sendGAEvent 함수 ERROR');
+              console.log(e.message);
+          }
       }
-  
+
       window._gtm = {
-        getGtmBodyData: getGtmBodyData,
-        parsePageTitle: parsePageTitle,
-        handleEvent: handleEvent,
-        removeEmptyElement: removeEmptyElement,
-        sendGAHybrid: sendGAHybrid,
-        sendGAPage: sendGAPage,
-        sendGAEvent: sendGAEvent
+          getGtmBodyData: getGtmBodyData,
+          parsePageTitle: parsePageTitle,
+          handleEvent: handleEvent,
+          removeEmptyElement: removeEmptyElement,
+          sendGAHybrid: sendGAHybrid,
+          sendGAPage: sendGAPage,
+          sendGAEvent: sendGAEvent
       };
       
-    })();
-  </script>
-  
+  })();
+</script>
