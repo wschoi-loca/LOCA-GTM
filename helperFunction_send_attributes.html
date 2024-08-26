@@ -48,7 +48,6 @@
 
           // Add event to sectionData based on isPopup value
           var isPopup = sectionData.isPopup;
-          var eventSuffix = eventType === 'visibility' ? 'view' : eventType;
 
           // Determine if eventType is related to eCommerce
           var isEcommerceEvent = ['view-item-list', 'select-item', 'view-item', 'add-to-cart', 'begin-checkout', 'purchase', 'refund'].includes(eventType);
