@@ -126,36 +126,6 @@
       }
     }
 
-    // 사용자 속성 설정 함수
-    function setUserProperties() {
-      var userProperties = {
-        up_test: 'test_test',
-      };
-
-      return userProperties;
-    }
-
-    // 화면 매개변수 설정 함수
-    function setPageParams() {
-      var pageParams = {
-        ep_cd77_cur_page_title: {{VAR_JS_depthAll}},
-        ep_cd78_cur_page_url: {{VAR_URLpath_decoded}}, // 도메인 제외 full url
-        ep_new_tag: 'Y',
-        ep_cd15_page_depth1: {{VAR_JS_1depth}},
-        ep_cd16_page_depth2: {{VAR_JS_2depth}},
-        ep_cd52_page_depth3: {{VAR_JS_3depth}},
-        ep_page_depth4: {{VAR_JS_4depth}},
-        ep_page_depth5: {{VAR_JS_5depth}},
-        ep_cd11_native_yn: 'SPA',
-        ep_cd43_act_id: {{VAR_pageData_act_id}},
-        ep_cd44_ex_act_id: {{VAR_pageData_ex_act_id}},
-        ep_cd45_ex_act_rpl_id: {{VAR_pageData_ex_act_rpl_id}},
-        ep_cd56_cms_cno: {{VAR_pageData_cmscno}},
-      };
-
-      return pageParams;
-    }
-
     // Helper function to get and parse dataset gtmBody
     function getGtmBodyData(element) {
       try {
@@ -186,21 +156,55 @@
     // Main function to handle different events - attribute 말아주는 역할
     function handleEvent(element, eventType) {
       try {
-        // element가 정의되었는지 먼저 확인
-        if (!element) {
-          console.log('::GTM handler Error:: Element is undefined or null');
-          return; // element가 없으면 함수 종료
+        var userProperties = setUpAndPageParams.setUserProperties(); // 빈 객체로 초기화
+        var pageParams = {
+            ep_cd77_cur_page_title: {{VAR_JS_depthAll}},
+            ep_cd78_cur_page_url: {{VAR_URLpath_decoded}}, // 도메인 제외 full url
+            ep_new_tag: 'Y',
+            ep_cd15_page_depth1: {{VAR_JS_1depth}},
+            ep_cd16_page_depth2: {{VAR_JS_2depth}},
+            ep_cd52_page_depth3: {{VAR_JS_3depth}},
+            ep_page_depth4: {{VAR_JS_4depth}},
+            ep_page_depth5: {{VAR_JS_5depth}},
+            ep_cd11_native_yn: 'SPA',
+            ep_cd43_act_id: {{VAR_pageData_act_id}},
+            ep_cd44_ex_act_id: {{VAR_pageData_ex_act_id}},
+            ep_cd45_ex_act_rpl_id: {{VAR_pageData_ex_act_rpl_id}},
+            ep_cd56_cms_cno: {{VAR_pageData_cmscno}},
+        };
+
+
+        if (eventType='page') {
+             // page
+             // attribute 말아주기
+            var ga4Data = {
+                eventType: 'screen_view',
+                screen_name: {{VAR_JS_depthAll}},
+                location: {{VAR_fullURL_decoded}},
+                userProperties: window._gtm.removeEmptyElement(userProperties),
+                pageParams: window._gtm.removeEmptyElement(pageParams), 
+                sectionParams: window._gtm.removeEmptyElement(sectionParams), 
+                eventParams: window._gtm.removeEmptyElement(eventParams), 
+                eCommerceParams: window._gtm.removeEmptyElement(eCommerceParams), 
+            };
+            console.log('::page-attributes::');
+            console.log(ga4Data);
+            mappingData(ga4Data);
         }
 
-        // page
-        var userProperties = setUserProperties(); // 빈 객체로 초기화
-        var pageParams = setPageParams(); // 빈 객체로 초기화
+        // element가 정의되었는지 먼저 확인
+        if (!element) {
+            
+            console.log('::GTM handler Error:: Element is undefined or null');
+            console.log('::GTM handler Error:: Element is undefined or null::eventType->'+eventType)
+            return; // element가 없으면 함수 종료
+        }        
 
         // section
         var sectionParams = {}; // 초기화
         var sectionElement = element.closest('[data-gtm-section]');
         if (sectionElement) {
-          sectionParams = getGtmBodyData(sectionElement) || {}; // 빈 객체로 초기화
+          sectionParams = getGtmBodyData(sectionElement) // 빈 객체로 초기화
         }
 
         // Determine if eventType is related to eCommerce
@@ -213,13 +217,13 @@
           // eCommerce
           var eCommerceElement = element.closest('[data-gtm-' + eventType + ']');
           if (eCommerceElement) {
-            eCommerceParams = getGtmBodyData(eCommerceElement) || {}; // 빈 객체로 초기화
+            eCommerceParams = getGtmBodyData(eCommerceElement) 
           }
         } else {
           // visibility or click
           var eventElement = element.closest('[data-gtm-' + eventType + ']');
           if (eventElement) {
-            eventParams = getGtmBodyData(eventElement) || {}; // 빈 객체로 초기화
+            eventParams = getGtmBodyData(eventElement)
           }
         }
 
@@ -228,15 +232,17 @@
           eventType: eventType,
           screen_name: {{VAR_JS_depthAll}},
           location: {{VAR_fullURL_decoded}},
-          userProperties: userProperties, // 값이 없으면 빈 객체로 전달
-          pageParams: pageParams, // 값이 없으면 빈 객체로 전달
-          sectionParams: sectionParams, // 값이 없으면 빈 객체로 전달
-          eventParams: eventParams, // 값이 없으면 빈 객체로 전달
-          eCommerceParams: eCommerceParams, // 값이 없으면 빈 객체로 전달
+          userProperties: window._gtm.removeEmptyElement(userProperties),
+          pageParams: window._gtm.removeEmptyElement(pageParams), 
+          sectionParams: window._gtm.removeEmptyElement(sectionParams), 
+          eventParams: window._gtm.removeEmptyElement(eventParams), 
+          eCommerceParams: window._gtm.removeEmptyElement(eCommerceParams), 
         };
-        mappingData(ga4Data);
+
         console.log('::attributes::');
         console.log(ga4Data);
+        mappingData(ga4Data);
+
       } catch (error) {
         console.log('::GTM handler Error::');
         console.log(error);
