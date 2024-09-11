@@ -1,7 +1,13 @@
 (function() {
+  // 전자상거래 이벤트
+  // dataLayer4
+  // sendGAEcommerce 호출 
+
   // 사용자 속성 설정
   function setUserProperties() {
-      var userProperties = {};
+      var userProperties = {
+          ep_cd01_user_id: {{VAR_user_id}},
+      };
       return userProperties;
   }
 
@@ -43,7 +49,7 @@
 
           return data;
       } catch (error) {
-          dataLayer.push({
+          dataLayer4.push({
               event: 'error_gtmBody',
               error_message: 'getGtmBodyData: ' + error.message,
               page_path: window.location.pathname
@@ -52,57 +58,68 @@
       }
   }
 
-  // Main function to handle different events - attribute 말아주는 역할
-  function handleEvent(element, eventType) {
-      try {
-          // page
-          var userProperties = removeEmptyElement(setUserProperties());
-          var pageParams = removeEmptyElement(setPageParams());
-
-           // section
-          var sectionElement = element.closest('[data-gtm-section]');
-          if (sectionElement) {
-            var sectionParams = getGtmBodyData(sectionElement);
-          }
-          
-          // Determine if eventType is related to eCommerce
-          var isEcommerceEvent = ['view-item-list', 'select-item', 'view-item', 'add-to-cart', 'begin-checkout', 'purchase', 'refund'].includes(eventType);
-          
-          // visibility or click or eCommerce
-          if (isEcommerceEvent) {
-              // eCommerce
-              var eCommerceElement = element.closest('[data-gtm-' + eventType + ']');
-              if (eCommerceElement) {
-                  var eCommerceParams = getGtmBodyData(eCommerceElement);
-              }
-          } else {
-              // visibility or click
-              var eventElement = element.closest('[data-gtm-' + eventType + ']');
-              if (eventElement) {
-                  var eventParams = getGtmBodyData(eventElement);
-              }
-          }
-
-          // attribute 말아주기
-          var ga4Data = {
-              eventType: eventType,
-              screen_name: {{VAR_JS_depthAll}},
-              location: {{VAR_fullURL_decoded}},
-              userProperties: userProperties,
-              pageParams: pageParams,
-              sectionParams: sectionParams,
-              eventParams: eventParams,
-              eCommerceParams: eCommerceParams
-          };
-          mappingData(ga4Data);
-          console.log('::attributes::');
-          console.log(ga4Data);
-
-      } catch (error) {
-          console.log('::GTM handler Error::');
-          console.log(error)
+// Main function to handle different events - attribute 말아주는 역할
+function handleEvent(element, eventType) {
+  try {
+      // element가 정의되었는지 먼저 확인
+      if (!element) {
+          console.log('::GTM handler Error:: Element is undefined or null');
+          return;  // element가 없으면 함수 종료
       }
+
+      // page
+      var userProperties = removeEmptyElement(setUserProperties()) || {}; // 빈 객체로 초기화
+      var pageParams = removeEmptyElement(setPageParams()) || {}; // 빈 객체로 초기화
+
+      // section
+      var sectionParams = {};  // 초기화
+      var sectionElement = element.closest('[data-gtm-section]');
+      if (sectionElement) {
+          sectionParams = getGtmBodyData(sectionElement) || {}; // 빈 객체로 초기화
+      }
+
+      // Determine if eventType is related to eCommerce
+      var isEcommerceEvent = ['view-item-list', 'select-item', 'view-item', 'add-to-cart', 'begin-checkout', 'purchase', 'refund'].includes(eventType);
+
+      // visibility or click or eCommerce
+      var eCommerceParams = {};  // 빈 객체로 초기화
+      var eventParams = {};  // 빈 객체로 초기화
+      if (isEcommerceEvent) {
+          // eCommerce
+          var eCommerceElement = element.closest('[data-gtm-' + eventType + ']');
+          if (eCommerceElement) {
+              eCommerceParams = getGtmBodyData(eCommerceElement) || {}; // 빈 객체로 초기화
+          }
+      } else {
+          // visibility or click
+          var eventElement = element.closest('[data-gtm-' + eventType + ']');
+          if (eventElement) {
+              eventParams = getGtmBodyData(eventElement) || {}; // 빈 객체로 초기화
+          }
+      }
+
+      // attribute 말아주기
+      var ga4Data = {
+          eventType: eventType,
+          screen_name: {{VAR_JS_depthAll}},
+          location: {{VAR_fullURL_decoded}},
+          userProperties: userProperties || {}, // 값이 없으면 빈 객체로 전달
+          pageParams: pageParams || {}, // 값이 없으면 빈 객체로 전달
+          sectionParams: sectionParams || {}, // 값이 없으면 빈 객체로 전달
+          eventParams: eventParams || {}, // 값이 없으면 빈 객체로 전달
+          eCommerceParams: eCommerceParams || {} // 값이 없으면 빈 객체로 전달
+      };
+      mappingData(ga4Data);
+      console.log('::attributes::');
+      console.log(ga4Data);
+
+  } catch (error) {
+      console.log('::GTM handler Error::');
+      console.log(error);
   }
+}
+
+
 
   // 앱 구분자 설정
   var browserInfo = navigator.userAgent;
@@ -210,17 +227,19 @@
           event_name = isPopup+'_'+eventTypeMapped;
       }
 
+      // 수정필요!!! 이커머스 이벤트
       var eCommerceEvent = ['view-item-list', 'select-item', 'view-item', 'add-to-cart', 'begin-checkout', 'purchase', 'refund'];
       var isEcommerceEvent = eCommerceEvent.includes(eventType);
 
       // 카테고리 세팅
+      // event params 안 넣기
       if (isEcommerceEvent) {
           var category = "띵샵_이커머스"
       } else {
           var category = ep_cd14_cts_nm ? ep_cd14_cts_nm :
               ep_label_text ? ep_label_text :
                   ep_category_depth1 ? ep_category_depth1 : 'n';
-          var ep_category = '콘텐츠_' + category + '_메인_' + '{{VAR_JS_1depth}}';
+          var ep_category = '콘텐츠_' + category + '_메인_' + {{VAR_JS_1depth}};
       }
 
       // 액션 세팅
@@ -253,20 +272,22 @@
       }
 
       // 최종 데이터 설정
+      // 수정 !!! 빈값 제거
       var gaFinalData = {
           event_name: event_name,
           location: data.location,
           screen_name: data.screen_name,
           userProperties: window._gtm.removeEmptyElement(userProperties),
           eventParams: window._gtm.removeEmptyElement(eventParams),
-          category: category,
-          action: action,
-          label: combineLabel
+
       };
+
+
 
       // 최종 데이터 전달
       console.log('::GA Final Data::');
       console.log(gaFinalData);
+      //sendGAEvent(gaFinalData); eCommverce
       return gaFinalData;
   }
 
@@ -286,7 +307,7 @@
                   object.userProperties,
                   object.eventParams);
 
-              window.dataLayer.push(webData);
+              window.dataLayer4.push(webData);
               console.log(window.dataLayer);
           }
       } catch (e) {
@@ -310,7 +331,7 @@
                   object.userProperties,
                   object.eventParams);
 
-              window.dataLayer.push(webData);
+              window.dataLayer4.push(webData);
           }
       } catch (e) {
           console.log('sendGAEvent 함수 ERROR');
@@ -328,7 +349,7 @@
               var webData = Object.assign({ event: 'loca_ecommerce' }, eventData);
               var ecommerceData = Object.assign({ items: items }, transactions);
               webData = Object.assign(webData, { ecommerce: ecommerceData });
-              window.dataLayer.push(webData);
+              window.dataLayer4.push(webData);
               console.log(window.dataLayer);
           }
       } catch (e) {
