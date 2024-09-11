@@ -85,8 +85,6 @@
           var eventParams = getGtmBodyData(eventElement);
         }
 
-
-
         // attribute 말아주기
         var ga4Data = {
           eventType: eventType,  
@@ -170,6 +168,7 @@
       var pageParams = data.pageParams;
       var sectionParams = data.sectionParams;
       var eventParams = data.eventParams;
+      var eCommerceParams = data.eCommerceParams;
     
       // 단순 속성 값 매핑
       var ep_category_depth1 = sectionParams.label1;
@@ -212,29 +211,47 @@
       } else {
         event_name = `${isPopup}_${eventTypeMapped}`;
       }
-    
+
+
+      var eCommerceEvent = ['view-item-list', 'select-item', 'view-item', 'add-to-cart', 'begin-checkout', 'purchase', 'refund'];
+      var isEcommerceEvent = eCommerceEvent.includes(eventType);
+
       // 카테고리 세팅
+      if (isEcommerceEvent) {
+        var category = "띵샵_이커머스"
+      } else {
       var category = ep_cd14_cts_nm ? ep_cd14_cts_nm : 
                      ep_label_text ? ep_label_text : 
                      ep_category_depth1 ? ep_category_depth1 : 'n';
-      category = '콘텐츠_' + category + '_메인_' + '{{VAR_JS_1depth}}';
+      var ep_category = '콘텐츠_' + category + '_메인_' + '{{VAR_JS_1depth}}';
+      }
     
       // 액션 세팅
-      var action = eventTypeMapped === 'click' ? '클릭' : '노출';
-    
+      if (isEcommerceEvent) {
+        var eCommerceClicks = ['select_item', 'add_to_cart'];
+        var ep_action = eCommerceClicks.includes(eventData.event_name) ? '클릭' : '노출';
+      } else {
+        var ep_action = eventTypeMapped === 'view' ? '노출' : '클릭';
+      }
+
       // 라벨 세팅
-      var id = ep_cd14_cts_nm ? ep_cd14_cts_nm : 'n';
-      var sid = ep_cd79_sub_cts_id ? ep_cd79_sub_cts_id : 'n';
-      var or1 = ep_section_index ? ep_section_index : 'n';
-      var or2 = ep_contents_index ? ep_contents_index : 'n';
-      var de = ep_cd14_cts_nm ? ep_cd14_cts_nm : (ep_label_text ? ep_label_text : 'n');
-      var clk = ep_label_text ? ep_label_text : 'n';
-    
-      var combineLabel = '';
-      if (eventTypeMapped === 'view') {
-        combineLabel = `id:${id}_sid:${sid}_or1:${or1}_or2:${or2}_de:${de}`;
-      } else if (eventTypeMapped === 'click') {
-        combineLabel = `id:${id}_sid:${sid}_or1:${or1}_or2:${or2}_de:${de}_clk:${clk}`;
+      if (isEcommerceEvent) {
+        var ep_label =  ep_cd14_cts_nm ? ep_cd14_cts_nm : 
+                        ep_label_text ? ep_label_text : 
+                        ep_category_depth1 ? ep_category_depth1 : 'n';;
+      } else {
+        var id = ep_cd14_cts_nm ? ep_cd14_cts_nm : 'n';
+        var sid = ep_cd79_sub_cts_id ? ep_cd79_sub_cts_id : 'n';
+        var or1 = ep_section_index ? ep_section_index : 'n';
+        var or2 = ep_contents_index ? ep_contents_index : 'n';
+        var de = ep_cd14_cts_nm ? ep_cd14_cts_nm : (ep_label_text ? ep_label_text : 'n');
+        var clk = ep_label_text ? ep_label_text : 'n';
+      
+        if (eventTypeMapped === 'view') {
+          var ep_label = `id:${id}_sid:${sid}_or1:${or1}_or2:${or2}_de:${de}`;
+        } else if (eventTypeMapped === 'click') {
+          var ep_label = `id:${id}_sid:${sid}_or1:${or1}_or2:${or2}_de:${de}_clk:${clk}`;
+        }
       }
     
       // 최종 데이터 설정
@@ -307,9 +324,6 @@
   // 전자상거래 이벤트 전송 함수
   function sendGAEcommerce(eventData, items, transactions) {
     try {
-      var actionList = ['select_item', 'add_to_cart'];
-      eventData.ep_category = '띵샵_이커머스';
-      eventData.ep_action = actionList.includes(eventData.event_name) ? '클릭' : '노출';
       
       if (isGAAndroid || isGAIOS) {
         var appData = Object.assign(eventData, items, transactions);
