@@ -27,86 +27,8 @@
        
       return pageParams;
     };
-    
-    // 최종 sendGA 종합해주기
-    function mappingData(data) {
 
-        var eventType = data.eventType
-        var pageParams = data.pageParams
-        var sectionParams = data.sectionParams
-        var eventParams = data.eventParams
-
-        // 단순 속성 값 매핑 값들 세팅
-     
-
-        ep_category_depth1 = sectionParams.label1,
-        ep_category_depth2 = sectionParams.label2,
-        ep_category_depth3 = sectionParams.label3.
-        ep_section_index = sectionParams.index,
-
-        ep_label_text = eventParams.label,
-
-        ep_cd25_srch_keyword = eventParams.search_keyword,
-        ep_srch_keyword_type =  eventParams.search_type,
-        ep_cd26_srch_result = eventParams.search_result,
-        ep_srch_result  = eventParams.search_result,
-        ep_cd27_srch_res_clk_nm = eventParams.search_result_click,
-
-        ep_cd12_card_name = eventParams.card_name,
-        ep_card_name = eventParams.card_name,
-        ep_card_code = eventParams.card_code,
-        ep_cd64_card_apply_code = eventParams.card_new_or_exist,
-        ep_cd65_card_apply_kind = eventParams.card_type,
-        ep_cd13_fn_pd_nm = eventParams.fin_prod_name,
-        ep_cd17_fn_loan_amt = eventParams.fin_amount,
-        ep_cd19_rvo_egm_stt_rt = eventParams.revol_rate,
-        ep_cd20_rvo_egm_stt_te = eventParams.revol_term,
-        ep_cd48_pd_apply_nm = eventParams.prod_funnel_name,
-
-        ep_cd14_cts_nm = eventParams.cts_name,
-        ep_cd42_cts_id = eventParams.cts_id,
-        ep_cd79_sub_cts_id = eventParams.cts_sub_id,
-        ep_section_index = sectionParams.index,
-        ep_contents_index = eventParams.index,
-
-
-        // 어트리뷰트 조합하는 값들 세팅
-        //이벤트 이름 세팅
-        var isPopup = sectionParams.is_popup ? "popup" : "cts";
-        var eventTypeMapped = eventType === 'visibility' ? 'view' : eventType;
-    
-        // event_name 규칙에 따른 생성
-        var event_name = '';
-    
-        // eventType이 'page'이고 mobile이 true이면 page_view, 아니면 screen_view
-        if (eventType === 'page') {
-            event_name = pageParams.isMO ? 'page_view' : 'screen_view';
-        } else {
-            event_name = `${isPopup}_${eventTypeMapped}`;
-        }
-
-        //카테고리 세팅
-        //액션 세팅
-        //라벨 세팅
-
-
-        //최종으로 전달
-        
-  
-
-    }
-      
-      var gaFinalData = {
-        event_name: eventName,
-        location: data.location,
-        screen_name: data.screen_name,
-        userProperties: window._gtm.removeEmptyElement(userProperties),
-        eventParams: window._gtm.removeEmptyElement(eventParams)
-      }
-
-      return setData;
-    };
-
+-
     // Helper function to get and parse dataset gtmBody
     function getGtmBodyData(element) {
       try {
@@ -152,9 +74,18 @@
 
 
         // visibility or click or eCommerce
-        var eventElement = element.closest('[data-gtm-' + (isEcommerceEvent ? 'ecommerce' : eventType) + ']');
-        var eventParams = getGtmBodyData(eventElement);
-        if (!eventData) return;
+
+        if(isEcommerceEvent) {
+          // eCommerce
+          var eCommerceElement = element.closest('[data-gtm-' + eventType + ']');
+          var eCommerceParams = getGtmBodyData(eCommerceElement);
+        } else {
+          // visibility or click
+          var eventElement = element.closest('[data-gtm-' + eventType + ']');
+          var eventParams = getGtmBodyData(eventElement);
+        }
+
+
 
         // attribute 말아주기
         var ga4Data = {
@@ -164,24 +95,12 @@
           userProperties: userProperties,
           pageParams: pageParams,
           sectionParams: sectionParams,
-          eventParams: eventParams
+          eventParams: eventParams,
+          eCommerceParams: eCommerceParams
         };
         mappingData(ga4Data);
         console.log('::attributes::');
         console.log(ga4Data);
-
-        if (eventSuffix == 'page') {
-          sendGAPage(ga4Data);
-        } else if (isEcommerceEvent) {
-          ga4Data.event_name = eventSuffix.replaceAll('-', '_');
-          var items = eventData.ecommerce.items;
-          delete eventData.ecommerce.items;
-          var transactions = eventData.ecommerce
-          sendGAEcommerce(ga4Data, items, transactions);
-        } else {
-          ga4Data.event_name = (isPopup ? 'popup_' : 'cts_') + eventSuffix;
-          sendGAEvent(ga4Data);
-        }
 
       } catch (error) {
         console.log('::GTM handler Error::');
@@ -245,6 +164,97 @@
 
       return returnValue;
     }
+
+    function mappingData(data) {
+      var eventType = data.eventType;
+      var pageParams = data.pageParams;
+      var sectionParams = data.sectionParams;
+      var eventParams = data.eventParams;
+    
+      // 단순 속성 값 매핑
+      var ep_category_depth1 = sectionParams.label1;
+      var ep_category_depth2 = sectionParams.label2;
+      var ep_category_depth3 = sectionParams.label3;
+      var ep_section_index = sectionParams.index;
+    
+      var ep_label_text = eventParams.label;
+    
+      var ep_cd25_srch_keyword = eventParams.search_keyword;
+      var ep_srch_keyword_type = eventParams.search_type;
+      var ep_cd26_srch_result = eventParams.search_result;
+      var ep_srch_result = eventParams.search_result;
+      var ep_cd27_srch_res_clk_nm = eventParams.search_result_click;
+    
+      var ep_cd12_card_name = eventParams.card_name;
+      var ep_card_name = eventParams.card_name;
+      var ep_card_code = eventParams.card_code;
+      var ep_cd64_card_apply_code = eventParams.card_new_or_exist;
+      var ep_cd65_card_apply_kind = eventParams.card_type;
+      var ep_cd13_fn_pd_nm = eventParams.fin_prod_name;
+      var ep_cd17_fn_loan_amt = eventParams.fin_amount;
+      var ep_cd19_rvo_egm_stt_rt = eventParams.revol_rate;
+      var ep_cd20_rvo_egm_stt_te = eventParams.revol_term;
+      var ep_cd48_pd_apply_nm = eventParams.prod_funnel_name;
+    
+      var ep_cd14_cts_nm = eventParams.cts_name;
+      var ep_cd42_cts_id = eventParams.cts_id;
+      var ep_cd79_sub_cts_id = eventParams.cts_sub_id;
+      var ep_section_index = sectionParams.index;
+      var ep_contents_index = eventParams.index;
+    
+      // 어트리뷰트 조합 및 이벤트 이름 세팅
+      var isPopup = sectionParams.is_popup ? "popup" : "cts";
+      var eventTypeMapped = eventType === 'visibility' ? 'view' : eventType;
+    
+      var event_name;
+      if (eventType === 'page') {
+        event_name = pageParams.isMO ? 'page_view' : 'screen_view';
+      } else {
+        event_name = `${isPopup}_${eventTypeMapped}`;
+      }
+    
+      // 카테고리 세팅
+      var category = ep_cd14_cts_nm ? ep_cd14_cts_nm : 
+                     ep_label_text ? ep_label_text : 
+                     ep_category_depth1 ? ep_category_depth1 : 'n';
+      category = '콘텐츠_' + category + '_메인_' + '{{VAR_JS_1depth}}';
+    
+      // 액션 세팅
+      var action = eventTypeMapped === 'click' ? '클릭' : '노출';
+    
+      // 라벨 세팅
+      var id = ep_cd14_cts_nm ? ep_cd14_cts_nm : 'n';
+      var sid = ep_cd79_sub_cts_id ? ep_cd79_sub_cts_id : 'n';
+      var or1 = ep_section_index ? ep_section_index : 'n';
+      var or2 = ep_contents_index ? ep_contents_index : 'n';
+      var de = ep_cd14_cts_nm ? ep_cd14_cts_nm : (ep_label_text ? ep_label_text : 'n');
+      var clk = ep_label_text ? ep_label_text : 'n';
+    
+      var combineLabel = '';
+      if (eventTypeMapped === 'view') {
+        combineLabel = `id:${id}_sid:${sid}_or1:${or1}_or2:${or2}_de:${de}`;
+      } else if (eventTypeMapped === 'click') {
+        combineLabel = `id:${id}_sid:${sid}_or1:${or1}_or2:${or2}_de:${de}_clk:${clk}`;
+      }
+    
+      // 최종 데이터 설정
+      var gaFinalData = {
+        event_name: event_name,
+        location: data.location,
+        screen_name: data.screen_name,
+        userProperties: window._gtm.removeEmptyElement(userProperties),
+        eventParams: window._gtm.removeEmptyElement(eventParams),
+        category: category,
+        action: action,
+        label: combineLabel
+      };
+    
+      // 최종 데이터 전달
+      console.log('::GA Final Data::');
+      console.log(gaFinalData);
+      return gaFinalData;
+    }
+    
 
     // 스크린뷰 전송 함수
     function sendGAPage(object) {
