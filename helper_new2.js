@@ -14,6 +14,8 @@
             var GAData;
             if (object.event_name == 'screen_view') {
               GAData = Object.assign({}, object);
+              console.log('::Final-sendGAHybrid::');
+              console.log(GAData);
             } else {
               var eventParams = Object.assign({}, commonGAData.eventParams, object.eventParams);
               var userProperties = Object.assign({}, commonGAData.userProperties, object.userProperties);
@@ -53,9 +55,11 @@
         sendGAPage: function (object) {
           try {
             commonGAData = Object.assign({}, object);
+            console.log('::sendGAPage::')
+            console.log(object)
             if (isGAAndroid || isGAIOS) {
               object.event_name = 'screen_view';
-              this.sendGAHybrid(object);
+              window._gtmutils.sendGAHybrid(object);
             } else {
               var webData = Object.assign(
                 {
@@ -79,7 +83,7 @@
         sendGAEvent: function (object) {
           try {
             if (isGAAndroid || isGAIOS) {
-              this.sendGAHybrid(object);
+              window._gtmutils.sendGAHybrid(object);
             } else {
               var webData = Object.assign(
                 {
@@ -106,7 +110,7 @@
             if (isGAAndroid || isGAIOS) {
               Object.assign(eventData.eventParams, transactions);
               var appData = Object.assign({}, eventData, { items: items });
-              this.sendGAHybrid(appData);
+              window._gtmutils.sendGAHybrid(appData);
             } else {
               var webData = Object.assign(
                 {
@@ -161,25 +165,26 @@
     function handleEvent(element, eventType, pageParams) {
       try {
 
-        // page
-        var userProperties = {}
-        userProperties.up_login_type = window._gtm.user.lgnType? window._gtm.user.lgnType : undefined;
+        // userProperties
+        var userProperties = {};
+        if (window._gtm && window._gtm.user) {
+          userProperties.up_login_type = window._gtm.user.lgnType ? window._gtm.user.lgnType : undefined;
+        }
   
         var pageParams = pageParams; 
-  
-        if(eventType=='page') {
-            console.log('::pageview-attributes::');
-            console.log(utils.removeEmptyElement(pageParams));
-            console.log(utils.removeEmptyElement(userProperties));
-            //mappingData(ga4Data);
-            return
-        }
 
         if (!element) {
             console.log('::GTM handler Error:: Element is undefined or null');
             return; // element가 없으면 함수 종료
         }
   
+        // VUE2 page-body
+        var custom_pageParams = {}; // 초기화
+        var pageElement = document.querySelector('[data-gtm-page]');
+        if (pageElement) {
+          custom_pageParams = utils.getGtmBodyData(pageElement) // 빈 객체로 초기화
+        }
+
         // section
         var sectionParams = {}; // 초기화
         var sectionElement = element.closest('[data-gtm-section]');
@@ -210,8 +215,8 @@
         // attribute 말아주기
         var ga4Data = {
           eventType: eventType,
-          screen_name: pageParams.ep_cd77_cur_page_title,
-          location: pageParams.ep_cd123_cur_page_fullurl,
+          screen_name: pageParams.ep_cd77_cur_page_title||custom_pageParams.page_title||'page_title 없음',
+          location: pageParams.ep_cd123_cur_page_fullurl||document.location.href||'주소 없음',
           userProperties: utils.removeEmptyElement(userProperties),
           pageParams: utils.removeEmptyElement(pageParams), 
           sectionParams: utils.removeEmptyElement(sectionParams), 
@@ -346,10 +351,7 @@
     // 최종 데이터 전달
     console.log('::GA Final Data::');
     console.log(gaFinalData);
-
-
   }
-  
 
     window._gtmutils = {
       sendGAHybrid: utils.sendGAHybrid,
