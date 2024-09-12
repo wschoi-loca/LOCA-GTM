@@ -9,7 +9,7 @@
     // 앱으로 데이터 전달 함수
     var utils = {
         // GAHybrid 데이터 전송 함수
-        sendGAHybrid: function (object) {
+        sendGAHybrid_v3: function (object) {
           try {
             var GAData;
             if (object.event_name == 'screen_view') {
@@ -21,7 +21,7 @@
               var userProperties = Object.assign({}, commonGAData.userProperties, object.userProperties);
               delete object.eventParams;
               delete object.userProperties;
-              GAData = Object.assign({}, object, { screen_name: object.screen_name, location: object.location, eventParams: eventParams, userProperties: userProperties });
+              GAData = Object.assign({}, object, { screen_name: commonGAData.screen_name, location: commonGAData.location, eventParams: eventParams, userProperties: userProperties });
             }
       
             console.log('::Final-sendGAHybrid::');
@@ -34,7 +34,7 @@
         },
       
         // 값 정리 및 제한 함수
-        removeEmptyElement: function (inputValues) {
+        removeEmptyElement_v3: function (inputValues) {
           var returnValue = {};
       
           for (var key in inputValues) {
@@ -52,14 +52,14 @@
         },
       
         // 스크린뷰 전송 함수
-        sendGAPage: function (object) {
+        sendGAPage_v3: function (object) {
           try {
             commonGAData = Object.assign({}, object);
             console.log('::sendGAPage::')
             console.log(object)
             if (isGAAndroid || isGAIOS) {
               object.event_name = 'screen_view';
-              window._gtmutils.sendGAHybrid(object);
+              window._gtmutils.sendGAHybrid_v3(object);
             } else {
               var webData = Object.assign(
                 {
@@ -80,10 +80,10 @@
         },
       
         // 스크린뷰 외 이벤트 전송 함수
-        sendGAEvent: function (object) {
+        sendGAEvent_v3: function (object) {
           try {
             if (isGAAndroid || isGAIOS) {
-              window._gtmutils.sendGAHybrid(object);
+              window._gtmutils.sendGAHybrid_v3(object);
             } else {
               var webData = Object.assign(
                 {
@@ -105,12 +105,12 @@
         },
       
         // 전자상거래 이벤트 전송 함수
-        sendGAEcommerce: function (eventData, items, transactions) {
+        sendGAEcommerce_v3: function (eventData, items, transactions) {
           try {
             if (isGAAndroid || isGAIOS) {
               Object.assign(eventData.eventParams, transactions);
               var appData = Object.assign({}, eventData, { items: items });
-              window._gtmutils.sendGAHybrid(appData);
+              window._gtmutils.sendGAHybrid_v3(appData);
             } else {
               var webData = Object.assign(
                 {
@@ -133,7 +133,7 @@
         },
       
         // Helper function to get and parse dataset gtmBody
-        getGtmBodyData: function (element) {
+        getGtmBodyData_v3: function (element) {
           try {
             if (!element) {
               return null;
@@ -162,7 +162,7 @@
       
 
     // Main function to handle different events - attribute 말아주는 역할
-    function handleEvent(element, eventType, pageParams) {
+    function handleEvent_v3(element, eventType, pageParams) {
       try {
 
         // userProperties
@@ -171,26 +171,20 @@
           userProperties.up_login_type = window._gtm.user.lgnType ? window._gtm.user.lgnType : undefined;
         }
   
-        var pageParams = pageParams; 
+        var pageParams = pageParams || {}; // Ensure pageParams is not undefined
 
         if (!element) {
-            console.log('::GTM handler Error:: Element is undefined or null');
-            return; // element가 없으면 함수 종료
+          console.log('::GTM handler Error:: Element is undefined or null');
+          return; // If element is missing, exit function early
         }
   
-        // VUE2 page-body
-        var custom_pageParams = {}; // 초기화
-        var pageElement = document.querySelector('[data-gtm-page]');
-        if (pageElement) {
-          custom_pageParams = utils.getGtmBodyData(pageElement) // 빈 객체로 초기화
-        }
-
         // section
-        var sectionParams = {}; // 초기화
+        var sectionParams = {}; // Initialize empty object
         var sectionElement = element.closest('[data-gtm-section]');
         if (sectionElement) {
-          sectionParams = utils.getGtmBodyData(sectionElement) // 빈 객체로 초기화
+          sectionParams = window._gtmutils.getGtmBodyData_v3(sectionElement) || {}; // Use fallback for empty data
         }
+
 
         // Determine if eventType is related to eCommerce
         var isEcommerceEvent = ['view-item-list', 'select-item', 'view-item', 'add-to-cart', 'begin-checkout', 'purchase', 'refund'].includes(eventType);
@@ -202,31 +196,34 @@
           // eCommerce
           var eCommerceElement = element.closest('[data-gtm-' + eventType + ']');
           if (eCommerceElement) {
-            eCommerceParams = utils.getGtmBodyData(eCommerceElement) 
+            eCommerceParams = window._gtmutils.getGtmBodyData_v3(eCommerceElement) 
           }
         } else {
           // visibility or click
           var eventElement = element.closest('[data-gtm-' + eventType + ']');
           if (eventElement) {
-            eventParams = utils.getGtmBodyData(eventElement)
+            eventParams = window._gtmutils.getGtmBodyData_v3(eventElement)
           }
         }
 
-        // attribute 말아주기
+        // Assign page title with a fallback value if undefined
+        var pageTitle = pageParams.ep_cd77_cur_page_title || custom_pageParams.page_title || 'Unknown Page Title';
+        var location = pageParams.ep_cd123_cur_page_fullurl || document.location.href || 'Unknown Location';
+        // Final data object
         var ga4Data = {
           eventType: eventType,
-          screen_name: pageParams.ep_cd77_cur_page_title||custom_pageParams.page_title||'page_title 없음',
-          location: pageParams.ep_cd123_cur_page_fullurl||document.location.href||'주소 없음',
-          userProperties: utils.removeEmptyElement(userProperties),
-          pageParams: utils.removeEmptyElement(pageParams), 
-          sectionParams: utils.removeEmptyElement(sectionParams), 
-          eventParams: utils.removeEmptyElement(eventParams), 
-          eCommerceParams: utils.removeEmptyElement(eCommerceParams), 
+          screen_name: pageTitle, // Use the safe page title
+          location: location,
+          userProperties: window._gtmutils.removeEmptyElement(userProperties),
+          pageParams: window._gtmutils.removeEmptyElement(pageParams),
+          sectionParams: window._gtmutils.removeEmptyElement(sectionParams),
+          eventParams: window._gtmutils.removeEmptyElement(eventParams),
+          eCommerceParams: window._gtmutils.removeEmptyElement(eCommerceParams),
         };
 
         console.log('::attributes::');
         console.log(ga4Data);
-        mappingData(ga4Data);
+        mappingData_v3(ga4Data);
 
       } catch (error) {
         console.log('::GTM handler Error::');
@@ -234,7 +231,7 @@
       }
     }
   
-  function mappingData(data) {
+  function mappingData_v3(data) {
     var eventType = data.eventType;
     var userProperties = data.userProperties;
     var sectionParams = data.sectionParams;
@@ -243,7 +240,7 @@
     var pageParams = data.pageParams
   
     // 맵핑 후 source에서 값을 삭제하는 함수
-    function assignIfExists(target, source, keyMappings) {
+    function assignIfExists_v3(target, source, keyMappings) {
         if (!source) return; // source가 없으면 함수 종료
         keyMappings.forEach(function(mapping) {
             if (source[mapping.source] !== undefined && source[mapping.source] !== null) {
@@ -257,14 +254,14 @@
 
     
     // sectionParams 및 eventParams 매핑
-    assignIfExists(sectionParams, data.sectionParams, [
+    assignIfExists_v3(sectionParams, data.sectionParams, [
         { source: 'label1', target: 'ep_category_depth1' },
         { source: 'label2', target: 'ep_category_depth2' },
         { source: 'label3', target: 'ep_category_depth3' },
         { source: 'index', target: 'ep_section_index' }
       ]);
     
-    assignIfExists(eventParams, data.eventParams, [
+    assignIfExists_v3(eventParams, data.eventParams, [
         { source: 'label', target: 'ep_label_text' },
         { source: 'search_keyword', target: 'ep_cd25_srch_keyword' },
         { source: 'search_type', target: 'ep_srch_keyword_type' },
@@ -336,16 +333,16 @@
       event_name: event_name,
       screen_name: data.screen_name,
       location: data.location,
-      eventParams: utils.removeEmptyElement(eventParams),
-      userProperties: utils.removeEmptyElement(userProperties),
+      eventParams: window.utils.removeEmptyElement_v3(eventParams),
+      userProperties: utils.removeEmptyElement_v3(userProperties),
     };
   
     if (Object.keys(eCommerceParams).length > 0) {
       var items = eCommerceParams.ecommerce ? eCommerceParams.ecommerce.items : [];
-      var transactions = utils.removeEmptyElement(eCommerceParams.ecommerce || {});
-      utils.sendGAEcommerce(gaFinalData, items, transactions);
+      var transactions = window.utils.removeEmptyElement_v3(eCommerceParams.ecommerce || {});
+      window.utils.sendGAEcommerce_v3(gaFinalData, items, transactions);
     } else {
-       utils.sendGAEvent(gaFinalData);
+       window.utils.sendGAEvent_v3(gaFinalData);
     }
   
     // 최종 데이터 전달
@@ -354,12 +351,12 @@
   }
 
     window._gtmutils = {
-      sendGAHybrid: utils.sendGAHybrid,
-      removeEmptyElement: utils.removeEmptyElement,
-      sendGAPage: utils.sendGAPage,
-      sendGAEvent: utils.sendGAEvent,
-      sendGAEcommerce: utils.sendGAEcommerce,
-      handleEvent: handleEvent,
+      sendGAHybrid_v3: utils.sendGAHybrid_v3,
+      removeEmptyElement_v3: utils.removeEmptyElement_v3,
+      sendGAPage_v3: utils.sendGAPage_v3,
+      sendGAEvent_v3: utils.sendGAEvent_v3,
+      sendGAEcommerce_v3: utils.sendGAEcommerce_v3,
+      handleEvent_v3: handleEvent_v3,
     };
   })();
 </script>
