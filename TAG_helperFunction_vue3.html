@@ -17,11 +17,11 @@
                   console.log('::Final-sendGAHybrid::');
                   console.log(GAData);
                 } else {
-                  var eventParams = Object.assign({}, commonGAData.eventParams, object.eventParams);
-                  var userProperties = Object.assign({}, commonGAData.userProperties, object.userProperties);
+                  var eventParams = Object.assign({}, object.eventParams);
+                  var userProperties = Object.assign({}, object.userProperties);
                   delete object.eventParams;
                   delete object.userProperties;
-                  GAData = Object.assign({}, object, { screen_name: commonGAData.screen_name, location: commonGAData.location, eventParams: eventParams, userProperties: userProperties });
+                  GAData = Object.assign({}, object, { screen_name: object.screen_name, location: object.location, eventParams: eventParams, userProperties: userProperties });
                 }
           
                 console.log('::Final-sendGAHybrid::');
@@ -42,7 +42,7 @@
           
                 if (value !== '' && value !== null && value !== undefined && value !== 'undefined' && value !== 'null') {
                   if (typeof value === 'string') {
-                    value = value.replace(/\\n/g, ' ').substring(0, 500);
+                    value = value.replace(/\\n/g, ' ').substring(0, 100);
                   }
                   returnValue[key] = value;
                 }
@@ -207,8 +207,10 @@
             }
     
             // Assign page title with a fallback value if undefined
+            // data-gtm-page attribute에 있는 page title을 가져옴
+            var custom_pageParams = document.querySelector('[data-gtm-page]');
             var pageTitle = pageParams.ep_cd77_cur_page_title || custom_pageParams.page_title || 'Unknown Page Title';
-            var location = pageParams.ep_cd123_cur_page_fullurl || document.location.href || 'Unknown Location';
+            var location = pageParams.ep_cd123_cur_page_fullurl || window.location.href || 'Unknown Location';
             // Final data object
             var ga4Data = {
               eventType: eventType,
@@ -325,7 +327,13 @@
             ? 'id:' + id + '_sid:' + sid + '_or1:' + or1 + '_or2:' + or2 + '_de:' + de
             : 'id:' + id + '_sid:' + sid + '_or1:' + or1 + '_or2:' + or2 + '_de:' + de + '_clk:' + clk;
         }
-      
+
+        // 이커머스 데이터 세팅
+        var ecommerce;
+        if (Object.keys(eCommerceParams).length > 0) {
+            ecommerce = eventParams.ep_cd14_cts_nm || eventParams.ep_label_text || eventParams.ep_category_depth1 || 'n';
+        }
+
         // 최종 데이터 설정
         eventParams = Object.assign(eventParams, sectionParams ,pageParams, { ep_category: ep_category, ep_action: ep_action, ep_label: ep_label });
       
@@ -352,6 +360,7 @@
     
         window._gtmutils = {
           sendGAHybrid_v3: utils.sendGAHybrid_v3,
+          getGtmBodyData_v3: utils.getGtmBodyData_v3
           removeEmptyElement_v3: utils.removeEmptyElement_v3,
           sendGAPage_v3: utils.sendGAPage_v3,
           sendGAEvent_v3: utils.sendGAEvent_v3,
