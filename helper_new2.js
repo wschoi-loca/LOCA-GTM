@@ -326,7 +326,7 @@
         : 'id:' + id + '_sid:' + sid + '_or1:' + or1 + '_or2:' + or2 + '_de:' + de + '_clk:' + clk;
     }
   
-    // 최종 데이터 설정
+    // event parameter 합치기
     eventParams = Object.assign(eventParams, sectionParams ,pageParams, { ep_category: ep_category, ep_action: ep_action, ep_label: ep_label });
   
     var gaFinalData = {
@@ -345,9 +345,6 @@
        window.utils.sendGAEvent_v3(gaFinalData);
     }
   
-    // 최종 데이터 전달
-    console.log('::GA Final Data::');
-    console.log(gaFinalData);
   }
 
     window._gtmutils = {

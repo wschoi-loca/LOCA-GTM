@@ -14,8 +14,6 @@
                 var GAData;
                 if (object.event_name == 'screen_view') {
                   GAData = Object.assign({}, object);
-                  console.log('::Final-sendGAHybrid::');
-                  console.log(GAData);
                 } else {
                   var eventParams = Object.assign({}, object.eventParams);
                   var userProperties = Object.assign({}, object.userProperties);
@@ -23,9 +21,7 @@
                   delete object.userProperties;
                   GAData = Object.assign({}, object, { screen_name: object.screen_name, location: object.location, eventParams: eventParams, userProperties: userProperties });
                 }
-          
-                console.log('::Final-sendGAHybrid::');
-                console.log(GAData);
+
                 isGAAndroid ? window.lotteCardgascriptAndroid.GAHybrid(JSON.stringify(GAData)) : webkit.messageHandlers.lotteCardgascriptCallbackHandler.postMessage(JSON.stringify(GAData));
               } catch (e) {
                 console.log('sendGAHybrid 함수 ERROR');
@@ -55,7 +51,7 @@
             sendGAPage_v3: function (object) {
               try {
                 commonGAData = Object.assign({}, object);
-                console.log('::sendGAPage::')
+                console.log('::sendGAPage_v3::')
                 console.log(object)
                 if (isGAAndroid || isGAIOS) {
                   object.event_name = 'screen_view';
@@ -82,6 +78,8 @@
             // 스크린뷰 외 이벤트 전송 함수
             sendGAEvent_v3: function (object) {
               try {
+                console.log('::sendGAEvent_v3::')
+                console.log(object)
                 if (isGAAndroid || isGAIOS) {
                   window._gtmutils.sendGAHybrid_v3(object);
                 } else {
@@ -107,6 +105,10 @@
             // 전자상거래 이벤트 전송 함수
             sendGAEcommerce_v3: function (eventData, items, transactions) {
               try {
+                //console 을 위한 appdata
+                var testappData = Object.assign({}, eventData, { items: items });
+                console.log('::sendGAEcommerce_v3::')
+                console.log(testappData)
                 if (isGAAndroid || isGAIOS) {
                   Object.assign(eventData.eventParams, transactions);
                   var appData = Object.assign({}, eventData, { items: items });
@@ -352,15 +354,15 @@
         } else {
            window._gtmutils.sendGAEvent_v3(gaFinalData);
         }
-      
-        // 최종 데이터 전달
-        console.log('::GA Final Data::');
-        console.log(gaFinalData);
       }
     
         window._gtmutils = {
           sendGAHybrid_v3: utils.sendGAHybrid_v3,
-          getGtmBodyData_v3: utils.getGtmBodyData_v3
+<<<<<<< HEAD
+          getGtmBodyData_v3: utils.getGtmBodyData_v3,
+=======
+          getGtmBodyData_v3: utils.getGtmBodyData_v3,
+>>>>>>> f5d0328b2f7c2714c42ac8181802213e4b10ee6d
           removeEmptyElement_v3: utils.removeEmptyElement_v3,
           sendGAPage_v3: utils.sendGAPage_v3,
           sendGAEvent_v3: utils.sendGAEvent_v3,
