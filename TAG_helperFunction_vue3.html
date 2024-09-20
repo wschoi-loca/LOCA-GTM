@@ -1,5 +1,6 @@
 <script>
   (function () {
+
     // 앱 구분자 설정
     var browserInfo = navigator.userAgent;
     var isGAAndroid = browserInfo.indexOf('GA_Android') > -1;
@@ -21,24 +22,39 @@
 
     // 앱으로 데이터 전달 함수
     var utils = {
+      deepCopy: function deepCopy(obj) {
+        if (obj === null || typeof obj !== 'object') {
+          return obj;
+        }
+
+        var copy = Array.isArray(obj) ? [] : {};
+
+        for (var key in obj) {
+          if (obj.hasOwnProperty(key)) {
+            copy[key] = deepCopy(obj[key]);  // 재귀적으로 복사
+          }
+        }
+
+        return copy;
+      },
+      
       // GAHybrid 데이터 전송 함수
       sendGAHybrid_v3: function (object) {
         try {
-          var GAData = {};
-          if (object.event_name == 'screen_view') {
-            GAData = Object.assign({}, object);
+          var GAData = {};  // 매번 새로운 GAData 객체 생성
+          if (object.event_name === 'screen_view') {
+            GAData = utils.deepCopy(object);  // 깊은 복사
           } else {
-            var eventParams = Object.assign({}, object.eventParams);
-            var userProperties = Object.assign({}, object.userProperties);
-            delete object.eventParams;
-            delete object.userProperties;
-            GAData = Object.assign({}, object, {
+            var eventParams = utils.deepCopy(object.eventParams);  // 새로운 eventParams 객체
+            var userProperties = utils.deepCopy(object.userProperties);  // 새로운 userProperties 객체
+            GAData = utils.deepCopy(object, {
               screen_name: object.screen_name,
               location: object.location,
               eventParams: eventParams,
               userProperties: userProperties
             });
           }
+          console.log('sendGAHybrid_v3');
           console.log(GAData);
           isGAAndroid
             ? window.lotteCardgascriptAndroid.GAHybrid(JSON.stringify(GAData))
@@ -61,24 +77,24 @@
             returnValue[key] = value;
           }
         }
-        return returnValue;
+        return returnValue;  // 매번 새로운 객체 반환
       }.bind(utils),
 
       // 스크린뷰 전송 함수
       sendGAPage_v3: function (object) {
         try {
-          commonGAData = Object.assign({}, object);
+          commonGAData = utils.deepCopy(object);  // 깊은 복사
           if (isGAAndroid || isGAIOS || isDevDomain) {
             object.event_name = 'screen_view';
             window._gtmutils.sendGAHybrid_v3(object);
           } else {
-            var webData = Object.assign({
+            var webData = utils.deepCopy({
                 event: 'loca_page',
                 title: object.screen_name,
                 location: object.location
               },
-              object.userProperties,
-              object.eventParams
+              utils.deepCopy(object.userProperties),  // 새로운 userProperties 객체
+              utils.deepCopy(object.eventParams)  // 새로운 eventParams 객체
             );
             window.dataLayer4.push(webData);
           }
@@ -93,16 +109,16 @@
       sendGAEvent_v3: function (object) {
         try {
           if (isGAAndroid || isGAIOS || isDevDomain) {
-            window._gtmutils.sendGAHybrid_v3(object);
+            window._gtmutils.sendGAHybrid_v3(utils.deepCopy(object));  // 깊은 복사로 이벤트 데이터 전송
           } else {
-            var webData = Object.assign({
+            var webData = utils.deepCopy({
                 event: 'loca_event',
                 event_name: object.event_name,
                 title: object.screen_name,
                 location: object.location
               },
-              object.userProperties,
-              object.eventParams
+              utils.deepCopy(object.userProperties),  // 새로운 userProperties 객체
+              utils.deepCopy(object.eventParams)  // 새로운 eventParams 객체
             );
             window.dataLayer4.push(webData);
           }
@@ -117,27 +133,26 @@
       sendGAEcommerce_v3: function (eventData, items, transactions) {
         try {
           if (isGAAndroid || isGAIOS || isDevDomain) {
-            Object.assign(eventData.eventParams, transactions);
-            var appData = Object.assign({}, eventData, { items: items });
-            // 개발서버 도메인 cosole.log(object)
+            var appData = utils.deepCopy(eventData);  // 깊은 복사
+            utils.deepCopy(appData.eventParams, utils.deepCopy(transactions));  // 깊은 복사
+            appData.items = utils.deepCopy(items);  // 깊은 복사된 items 배열
             window._gtmutils.sendGAHybrid_v3(appData);
           } else {
-            var webData = Object.assign(
+            var webData = utils.deepCopy(
               {
                 event: 'loca_ecommerce',
                 event_name: eventData.event_name,
                 title: eventData.screen_name,
                 location: eventData.location,
               },
-              eventData.userProperties,
-              eventData.eventParams
+              utils.deepCopy(eventData.userProperties),  // 새로운 userProperties 객체
+              utils.deepCopy(eventData.eventParams)  // 새로운 eventParams 객체
             );
-            var ecommerceData = Object.assign({ items: items }, transactions);
-            Object.assign(webData, { ecommerce: ecommerceData });
+            var ecommerceData = utils.deepCopy({ items: utils.deepCopy(items) }, utils.deepCopy(transactions));
+            utils.deepCopy(webData, { ecommerce: ecommerceData });
             window.dataLayer4.push(webData);
           }
         } catch (e) {
-          // 오류 처리 로깅
           console.log('sendGAEcommerce 함수 ERROR');
           console.log(e.message);
           console.log(e.stack)
@@ -149,11 +164,11 @@
         try {
           if (!element) return null;
           var data = {};
-          if(isEcommerce){
+          if (isEcommerce) {
             if (element.dataset.gtmEcommerce) {
               data = JSON.parse(element.dataset.gtmEcommerce);
             } else {
-              var element = element.closest('[data-gtm-ecommerce]')
+              var element = element.closest('[data-gtm-ecommerce]');
               data = JSON.parse(element.dataset.gtmEcommerce);
             }
           } else if (element.dataset.gtmBody) {
@@ -161,7 +176,7 @@
           } else {
             data = null;
           }
-          return data;
+          return utils.deepCopy(data);  // 항상 깊은 복사된 객체 반환
         } catch (error) {
           dataLayer4.push({
             event: 'error_gtmBody',
@@ -173,61 +188,57 @@
       }.bind(utils)
     };
 
-    // Main function to handle different events - attribute 말아주는 역할
-    function handleEvent_v3(element, eventType, pageParams) {
-      try {
-        if(eventType !== 'screen_view') {
-          var userProperties = {};
-          if (window._gtm && window._gtm.user) {
-            userProperties.up_login_type = window._gtm.user.lgnType ? window._gtm.user.lgnType : undefined;
-          }
-
-          var pageParams = pageParams || {}; // Ensure pageParams is not undefined
-
-          if (!element) return; // If element is missing, exit function early
-
-          var sectionParams = {}; // Initialize empty object
-          var sectionElement = element.closest('[data-gtm-section]');
-          if (sectionElement) {
-            sectionParams = window._gtmutils.getGtmBodyData_v3(sectionElement, false) || {};
-          }
-
-          var isEcommerceEvent = ['view-item-list', 'select-item', 'view-item', 'add-to-cart', 'begin-checkout', 'purchase', 'refund', 'etc'].includes(eventType);
-          var eCommerceParams = {}; // Initialize empty object
-
-          if (isEcommerceEvent) {
-            var eCommerceElement = element.closest('[data-gtm-' + eventType + ']');
-            if (eCommerceElement) {
-              eCommerceParams = window._gtmutils.getGtmBodyData_v3(eCommerceElement, true);
-            }
-          } else {
-          
-          var eventParams = {}; // 명시적으로 초기화
-          var evenetElement = element.closest('[data-gtm-' + eventType + ']');
-            if (evenetElement) {
-              eventParams = window._gtmutils.getGtmBodyData_v3(evenetElement, false);
-            }
-          } 
-
-          eventParams = Object.assign({}, eventParams, sectionParams, pageParams);
-        }
-        console.log(eventType)
-        window._gtmutils.mappingData_v3({
-          eventType: eventType,
-          screen_name: pageParams.ep_cd77_cur_page_title || 'Unknown Page Title',
-          location: pageParams.ep_cd123_cur_page_fullurl || window.location.href,
-          userProperties: window._gtmutils.removeEmptyElement_v3(userProperties),
-          pageParams: window._gtmutils.removeEmptyElement_v3(pageParams),
-          sectionParams: window._gtmutils.removeEmptyElement_v3(sectionParams),
-          eventParams: window._gtmutils.removeEmptyElement_v3(eventParams),
-          eCommerceParams: window._gtmutils.removeEmptyElement_v3(eCommerceParams)
-        });
-      } catch (e) {
-        console.log('handleEvent_v3 함수 ERROR');
-        console.log(e.message);
-        console.log(e.stack)
+    // Main function to handle different events
+  function handleEvent_v3(element, eventType, pageParams) {
+    try {
+      var userProperties = {};
+      if (window._gtm && window._gtm.user) {
+        userProperties.up_login_type = window._gtm.user.lgnType ? window._gtm.user.lgnType : undefined;
       }
+
+      var pageParams = utils.deepCopy(pageParams);  // 새로운 pageParams 객체
+
+      if (!element) return;  // If element is missing, exit function early
+
+      var sectionParams = {};  // 새로운 sectionParams 객체
+      var sectionElement = element.closest('[data-gtm-section]');
+      if (sectionElement) {
+        sectionParams = window._gtmutils.getGtmBodyData_v3(sectionElement, false) || {};
+      }
+
+      var eventParams = {};  // 새로운 eventParams 객체
+      var isEcommerceEvent = ['view-item-list', 'select-item', 'view-item', 'add-to-cart', 'begin-checkout', 'purchase', 'refund'].includes(eventType);
+      var eCommerceParams = {};  // 새로운 eCommerceParams 객체
+
+      if (isEcommerceEvent) {
+        var eCommerceElement = element.closest('[data-gtm-' + eventType + ']');
+        if (eCommerceElement) {
+          eCommerceParams = window._gtmutils.getGtmBodyData_v3(eCommerceElement, true);
+        }
+        // Only add items for eCommerce events
+        eventParams = utils.deepCopy(eventParams, eCommerceParams, sectionParams, pageParams);
+      } else {
+        eventParams = utils.deepCopy(eventParams, sectionParams, pageParams);  // Non-eCommerce events
+      }
+
+      // Here you handle and map the final data
+      window._gtmutils.mappingData_v3({
+        eventType: eventType,
+        screen_name: pageParams.ep_cd77_cur_page_title || 'Unknown Page Title',
+        location: pageParams.ep_cd123_cur_page_fullurl || window.location.href,
+        userProperties: window._gtmutils.removeEmptyElement_v3(userProperties),
+        pageParams: window._gtmutils.removeEmptyElement_v3(pageParams),
+        sectionParams: window._gtmutils.removeEmptyElement_v3(sectionParams),
+        eventParams: window._gtmutils.removeEmptyElement_v3(eventParams),
+        eCommerceParams: isEcommerceEvent ? window._gtmutils.removeEmptyElement_v3(eCommerceParams) : {}
+      });
+    } catch (e) {
+      console.log('handleEvent_v3 함수 ERROR');
+      console.log(e.message);
+      console.log(e.stack);
     }
+  }
+
 
     function mappingData_v3(data) {
       var eventType = data.eventType;
@@ -255,6 +266,7 @@
         { source: 'index', target: 'ep_section_index' }
       ]);
 
+      
       assignIfExists_v3(eventParams, data.eventParams, [
         { source: 'label', target: 'ep_label_text' },
         { source: 'search_keyword', target: 'ep_cd25_srch_keyword' },
@@ -302,7 +314,14 @@
         }
 
         var ep_label = eventParams.ep_cd14_cts_nm || eventParams.ep_label_text || 'n';
-        eventParams = Object.assign({}, sectionParams, pageParams, { ep_category: ep_category, ep_action: ep_action, ep_label: ep_label });
+        
+       // 새 객체를 만들어서 복사된 값과 추가 속성을 결합
+        var eventParams = Object.assign({}, sectionParams, pageParams, {
+          ep_category: ep_category,
+          ep_action: ep_action,
+          ep_label: ep_label
+        });
+        delete eventParams;
       }
 
       var gaFinalData = {
