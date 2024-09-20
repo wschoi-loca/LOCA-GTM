@@ -6,6 +6,19 @@
     var isGAIOS = browserInfo.indexOf('GA_iOS_WK') > -1;
     var commonGAData = {};
 
+    // 콘솔찍을 도메인 목록을 배열로 정의
+    var devDomains = [
+      'tlocashop.lottecard.co.kr',
+      'dmoweb3.lottecard.co.kr',
+      'dmoweb2.lottecard.co.kr',
+      'dlocashop.lottecard.co.kr'
+    ];
+
+    // 현재 페이지의 도메인이 유효한 도메인 목록에 포함되는지 확인
+    var isDevDomain = devDomains.some(function(domain) {
+      return window.location.hostname.includes(domain);
+    });
+
     // 앱으로 데이터 전달 함수
     var utils = {
       // GAHybrid 데이터 전송 함수
@@ -26,12 +39,13 @@
               userProperties: userProperties
             });
           }
-
+          console.log(GAData);
           isGAAndroid
             ? window.lotteCardgascriptAndroid.GAHybrid(JSON.stringify(GAData))
             : webkit.messageHandlers.lotteCardgascriptCallbackHandler.postMessage(JSON.stringify(GAData));
         } catch (e) {
-          // 오류 처리 로깅
+          console.log('sendGAHybrid_v3 함수 ERROR');
+          console.log(e.message);
         }
       }.bind(utils),
 
@@ -54,9 +68,9 @@
       sendGAPage_v3: function (object) {
         try {
           commonGAData = Object.assign({}, object);
-          if (isGAAndroid || isGAIOS) {
+          if (isGAAndroid || isGAIOS || isDevDomain) {
             object.event_name = 'screen_view';
-            this.sendGAHybrid_v3(object);
+            window._gtmutils.sendGAHybrid_v3(object);
           } else {
             var webData = Object.assign({
                 event: 'loca_page',
@@ -69,15 +83,17 @@
             window.dataLayer4.push(webData);
           }
         } catch (e) {
-          // 오류 처리 로깅
+          console.log('sendGAPage 함수 ERROR');
+          console.log(e.message);
+          console.log(e.stack)
         }
       }.bind(utils),
 
       // 스크린뷰 외 이벤트 전송 함수
       sendGAEvent_v3: function (object) {
         try {
-          if (isGAAndroid || isGAIOS) {
-            this.sendGAHybrid_v3(object);
+          if (isGAAndroid || isGAIOS || isDevDomain) {
+            window._gtmutils.sendGAHybrid_v3(object);
           } else {
             var webData = Object.assign({
                 event: 'loca_event',
@@ -91,28 +107,55 @@
             window.dataLayer4.push(webData);
           }
         } catch (e) {
-          // 오류 처리 로깅
+          console.log('sendGAEvent 함수 ERROR');
+          console.log(e.message);
+          console.log(e.stack)
         }
       }.bind(utils),
 
       // 전자상거래 이벤트 전송 함수
       sendGAEcommerce_v3: function (eventData, items, transactions) {
         try {
-          Object.assign(eventData.eventParams, transactions);
-          var appData = Object.assign({}, eventData, { items: items });
-          window._gtmutils.sendGAHybrid_v3(appData);
+          if (isGAAndroid || isGAIOS || isDevDomain) {
+            Object.assign(eventData.eventParams, transactions);
+            var appData = Object.assign({}, eventData, { items: items });
+            // 개발서버 도메인 cosole.log(object)
+            window._gtmutils.sendGAHybrid_v3(appData);
+          } else {
+            var webData = Object.assign(
+              {
+                event: 'loca_ecommerce',
+                event_name: eventData.event_name,
+                title: eventData.screen_name,
+                location: eventData.location,
+              },
+              eventData.userProperties,
+              eventData.eventParams
+            );
+            var ecommerceData = Object.assign({ items: items }, transactions);
+            Object.assign(webData, { ecommerce: ecommerceData });
+            window.dataLayer4.push(webData);
+          }
         } catch (e) {
           // 오류 처리 로깅
+          console.log('sendGAEcommerce 함수 ERROR');
+          console.log(e.message);
+          console.log(e.stack)
         }
       }.bind(utils),
 
       // Helper function to get and parse dataset gtmBody
-      getGtmBodyData_v3: function (element) {
+      getGtmBodyData_v3: function (element, isEcommerce) {
         try {
           if (!element) return null;
           var data = {};
-          if (element.dataset.gtmEcommerce) {
-            data = JSON.parse(element.dataset.gtmEcommerce);
+          if(isEcommerce){
+            if (element.dataset.gtmEcommerce) {
+              data = JSON.parse(element.dataset.gtmEcommerce);
+            } else {
+              var element = element.closest('[data-gtm-ecommerce]')
+              data = JSON.parse(element.dataset.gtmEcommerce);
+            }
           } else if (element.dataset.gtmBody) {
             data = JSON.parse(element.dataset.gtmBody);
           } else {
@@ -133,35 +176,42 @@
     // Main function to handle different events - attribute 말아주는 역할
     function handleEvent_v3(element, eventType, pageParams) {
       try {
-        var userProperties = {};
-        if (window._gtm && window._gtm.user) {
-          userProperties.up_login_type = window._gtm.user.lgnType ? window._gtm.user.lgnType : undefined;
-        }
-
-        var pageParams = pageParams || {}; // Ensure pageParams is not undefined
-
-        if (!element) return; // If element is missing, exit function early
-
-        var eventParams = {}; // 명시적으로 초기화
-
-        var sectionParams = {}; // Initialize empty object
-        var sectionElement = element.closest('[data-gtm-section]');
-        if (sectionElement) {
-          sectionParams = window._gtmutils.getGtmBodyData_v3(sectionElement) || {};
-        }
-
-        var isEcommerceEvent = ['view-item-list', 'select-item', 'view-item', 'add-to-cart', 'begin-checkout', 'purchase', 'refund'].includes(eventType);
-        var eCommerceParams = {}; // Initialize empty object
-
-        if (isEcommerceEvent) {
-          var eCommerceElement = element.closest('[data-gtm-' + eventType + ']');
-          if (eCommerceElement) {
-            eCommerceParams = window._gtmutils.getGtmBodyData_v3(eCommerceElement);
+        if(eventType !== 'screen_view') {
+          var userProperties = {};
+          if (window._gtm && window._gtm.user) {
+            userProperties.up_login_type = window._gtm.user.lgnType ? window._gtm.user.lgnType : undefined;
           }
+
+          var pageParams = pageParams || {}; // Ensure pageParams is not undefined
+
+          if (!element) return; // If element is missing, exit function early
+
+          var sectionParams = {}; // Initialize empty object
+          var sectionElement = element.closest('[data-gtm-section]');
+          if (sectionElement) {
+            sectionParams = window._gtmutils.getGtmBodyData_v3(sectionElement, false) || {};
+          }
+
+          var isEcommerceEvent = ['view-item-list', 'select-item', 'view-item', 'add-to-cart', 'begin-checkout', 'purchase', 'refund', 'etc'].includes(eventType);
+          var eCommerceParams = {}; // Initialize empty object
+
+          if (isEcommerceEvent) {
+            var eCommerceElement = element.closest('[data-gtm-' + eventType + ']');
+            if (eCommerceElement) {
+              eCommerceParams = window._gtmutils.getGtmBodyData_v3(eCommerceElement, true);
+            }
+          } else {
+          
+          var eventParams = {}; // 명시적으로 초기화
+          var evenetElement = element.closest('[data-gtm-' + eventType + ']');
+            if (evenetElement) {
+              eventParams = window._gtmutils.getGtmBodyData_v3(evenetElement, false);
+            }
+          } 
+
+          eventParams = Object.assign({}, eventParams, sectionParams, pageParams);
         }
-
-        eventParams = Object.assign({}, eventParams, sectionParams, pageParams);
-
+        console.log(eventType)
         window._gtmutils.mappingData_v3({
           eventType: eventType,
           screen_name: pageParams.ep_cd77_cur_page_title || 'Unknown Page Title',
@@ -172,8 +222,10 @@
           eventParams: window._gtmutils.removeEmptyElement_v3(eventParams),
           eCommerceParams: window._gtmutils.removeEmptyElement_v3(eCommerceParams)
         });
-      } catch (error) {
-        // 오류 처리 로깅
+      } catch (e) {
+        console.log('handleEvent_v3 함수 ERROR');
+        console.log(e.message);
+        console.log(e.stack)
       }
     }
 
@@ -224,31 +276,34 @@
         { source: 'index', target: 'ep_contents_index' }
       ]);
 
-      var event_name;
-      var isPopup = data.sectionParams.is_popup ? 'popup' : 'cts';
-      var eventTypeMapped = eventType === 'visibility' ? 'view' : 'click';
-      event_name = isPopup + '_' + eventTypeMapped;
+      if(eventType !== 'screen_view') {
+        
+        var event_name;
+        var isPopup = data.sectionParams.is_popup ? 'popup' : 'cts';
+        var eventTypeMapped = eventType === 'visibility' ? 'view' : 'click';
+        event_name = isPopup + '_' + eventTypeMapped;
 
-      if (Object.keys(eCommerceParams).length > 0) {
-        event_name = eventType.replaceAll('-', '_');
+        if (Object.keys(eCommerceParams).length > 0) {
+          event_name = eventType.replaceAll('-', '_');
+        }
+
+        var ep_category;
+        if (Object.keys(eCommerceParams).length > 0) {
+          ep_category = '띵샵_이커머스';
+        } else {
+          var category = eventParams.ep_cd14_cts_nm || eventParams.ep_label_text || eventParams.ep_category_depth1 || 'n';
+          ep_category = '콘텐츠_' + category + '_메인_' + pageParams.ep_cd15_page_depth1;
+        }
+
+        var ep_action = eventType === 'visibility' ? '노출' : '클릭';
+        if (Object.keys(eCommerceParams).length > 0) {
+          var eCommerceClicks = ['select_item', 'add_to_cart'];
+          ep_action = eCommerceClicks.includes(event_name) ? '클릭' : '노출';
+        }
+
+        var ep_label = eventParams.ep_cd14_cts_nm || eventParams.ep_label_text || 'n';
+        eventParams = Object.assign({}, sectionParams, pageParams, { ep_category: ep_category, ep_action: ep_action, ep_label: ep_label });
       }
-
-      var ep_category;
-      if (Object.keys(eCommerceParams).length > 0) {
-        ep_category = '띵샵_이커머스';
-      } else {
-        var category = eventParams.ep_cd14_cts_nm || eventParams.ep_label_text || eventParams.ep_category_depth1 || 'n';
-        ep_category = '콘텐츠_' + category + '_메인_' + pageParams.ep_cd15_page_depth1;
-      }
-
-      var ep_action = eventType === 'visibility' ? '노출' : '클릭';
-      if (Object.keys(eCommerceParams).length > 0) {
-        var eCommerceClicks = ['select_item', 'add_to_cart'];
-        ep_action = eCommerceClicks.includes(event_name) ? '클릭' : '노출';
-      }
-
-      var ep_label = eventParams.ep_cd14_cts_nm || eventParams.ep_label_text || 'n';
-      eventParams = Object.assign({}, sectionParams, pageParams, { ep_category: ep_category, ep_action: ep_action, ep_label: ep_label });
 
       var gaFinalData = {
         event_name: event_name,
