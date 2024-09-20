@@ -160,23 +160,38 @@
       }.bind(utils),
 
       // Helper function to get and parse dataset gtmBody
-      getGtmBodyData_v3: function (element, isEcommerce) {
+      // Helper function to get and parse dataset gtmBody
+      getGtmBodyData_v3: function (element, eventType) {
         try {
           if (!element) return null;
+
           var data = {};
-          if (isEcommerce) {
-            if (element.dataset.gtmEcommerce) {
-              data = JSON.parse(element.dataset.gtmEcommerce);
+          var isEcommerceEvent = ['view-item-list', 'select-item', 'view-item', 'add-to-cart', 'begin-checkout', 'purchase', 'refund', 'etc'].includes(eventType);
+
+          // Check if the event is an eCommerce event
+          if (isEcommerceEvent) {
+            if (eventType !== 'etc') {
+              // If it is an eCommerce event but not 'etc'
+              if (element.dataset.gtmEcommerce) {
+                data = JSON.parse(element.dataset.gtmEcommerce);
+              }
             } else {
-              var element = element.closest('[data-gtm-ecommerce]');
-              data = JSON.parse(element.dataset.gtmEcommerce);
+              // Handle 'etc' case where both gtmEcommerce and gtmBody need to be combined
+              var ec_element = element.closest('[data-gtm-ecommerce]');
+              
+              if (ec_element && ec_element.dataset.gtmEcommerce) {
+                var ec_data = JSON.parse(ec_element.dataset.gtmEcommerce);
+                Object.assign(data, ec_data); // Merge eCommerce data
+              }
             }
           } else if (element.dataset.gtmBody) {
+            // Handle non-eCommerce events that have gtmBody data
             data = JSON.parse(element.dataset.gtmBody);
           } else {
             data = null;
           }
-          return utils.deepCopy(data);  // 항상 깊은 복사된 객체 반환
+          return utils.deepCopy(data);  // Return deep copy of the combined data
+
         } catch (error) {
           dataLayer4.push({
             event: 'error_gtmBody',
@@ -203,21 +218,32 @@
       var sectionParams = {};  // 새로운 sectionParams 객체
       var sectionElement = element.closest('[data-gtm-section]');
       if (sectionElement) {
-        sectionParams = window._gtmutils.getGtmBodyData_v3(sectionElement, false) || {};
+        sectionParams = window._gtmutils.getGtmBodyData_v3(sectionElement) || {};
       }
 
       var eventParams = {};  // 새로운 eventParams 객체
-      var isEcommerceEvent = ['view-item-list', 'select-item', 'view-item', 'add-to-cart', 'begin-checkout', 'purchase', 'refund'].includes(eventType);
+
+      var isEcommerceEvent = ['view-item-list', 'select-item', 'view-item', 'add-to-cart', 'begin-checkout', 'purchase', 'refund', 'etc'].includes(eventType);
       var eCommerceParams = {};  // 새로운 eCommerceParams 객체
 
       if (isEcommerceEvent) {
         var eCommerceElement = element.closest('[data-gtm-' + eventType + ']');
         if (eCommerceElement) {
-          eCommerceParams = window._gtmutils.getGtmBodyData_v3(eCommerceElement, true);
+          eCommerceParams = window._gtmutils.getGtmBodyData_v3(eCommerceElement, eventType);
+          if (eventType === 'etc') {
+            var bodyElement = element.closest('[data-gtm-body]');
+            if (bodyElement) {
+              var eventParams = window._gtmutils.getGtmBodyData_v3(bodyElement);
+            }
+          }
         }
         // Only add items for eCommerce events
         eventParams = utils.deepCopy(eventParams, eCommerceParams, sectionParams, pageParams);
       } else {
+        var eventElement = element.closest('[data-gtm-' + eventType + ']');
+        if (eventElement) {
+          eventParams = window._gtmutils.getGtmBodyData_v3(eventElement) || {};
+        }
         eventParams = utils.deepCopy(eventParams, sectionParams, pageParams);  // Non-eCommerce events
       }
 
@@ -309,7 +335,7 @@
 
         var ep_action = eventType === 'visibility' ? '노출' : '클릭';
         if (Object.keys(eCommerceParams).length > 0) {
-          var eCommerceClicks = ['select_item', 'add_to_cart'];
+          var eCommerceClicks = ['select_item', 'add_to_cart', 'etc'];
           ep_action = eCommerceClicks.includes(event_name) ? '클릭' : '노출';
         }
 
@@ -321,7 +347,6 @@
           ep_action: ep_action,
           ep_label: ep_label
         });
-        delete eventParams;
       }
 
       var gaFinalData = {
@@ -349,7 +374,8 @@
       sendGAEvent_v3: utils.sendGAEvent_v3,
       sendGAEcommerce_v3: utils.sendGAEcommerce_v3,
       handleEvent_v3: handleEvent_v3,
-      mappingData_v3: mappingData_v3
+      mappingData_v3: mappingData_v3,
+      deepCopy: utils.deepCopy
     };
   })();
 </script>
