@@ -50,7 +50,7 @@
             location: {{VAR_fullURL_decoded}}, 
             event_name: 'screen_view'
           }, { eventParams: window._gtmutils.removeEmptyElement_v3(eventParams) },
-             { userProperties: userProperties });
+             { userProperties: window._gtmutils.removeEmptyElement_v3(userProperties) });
 
           window._gtmutils.sendGAPage_v3(pageData);
 
