@@ -39,6 +39,7 @@
           eventParams.ep_cd122_lgn_dtti = window._gtm.user && window._gtm.user.lgnDtti ? window._gtm.user.lgnDtti : undefined;
           eventParams.ep_cd49_timestamp = {{VAR_JS_dimension49 (Time Stamp)}} ? {{VAR_JS_dimension49 (Time Stamp)}} : undefined;
 
+          window._gtmutils.removeEmptyElement_v3(eventParams);
           // userProperties 객체 정의
           var userProperties = {};
           userProperties.user_id = window._gtm.user && window._gtm.user.sha512_cno ? window._gtm.user.sha512_cno : zero_value;
