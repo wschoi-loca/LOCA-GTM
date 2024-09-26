@@ -370,7 +370,7 @@
         if (Object.keys(eCommerceParams).length > 0) {
           ep_label = eCommerceParams.ecommerce.transaction_id || eCommerceParams.ecommerce.items[0].item_id || eventParams.ep_cd14_cts_nm || eventParams.ep_label_text || eventParams.ep_category_depth1 || 'n';
         } else {
-          var id = eventParams.ep_cd14_cts_nm || 'n';
+          var id = eventParams.ep_cd42_cts_id || 'n';
           var sid = eventParams.ep_cd79_sub_cts_id || 'n';
           var or1 = eventParams.ep_section_index || 'n';
           var or2 = eventParams.ep_contents_index || 'n';
@@ -401,7 +401,6 @@
           eventParams.ep_cd49_timestamp = {{VAR_JS_dimension49 (Time Stamp)}} ? {{VAR_JS_dimension49 (Time Stamp)}} : undefined;
 
         }
-        utils.removeEmptyElement_v3(eventParams);
         
        // 새 객체를 만들어서 복사된 값과 추가 속성을 결합
         var eventParams = Object.assign({}, eventParams, sectionParams, pageParams, {
@@ -415,7 +414,7 @@
         event_name: event_name,
         screen_name: data.screen_name,
         location: data.location,
-        eventParams: eventParams,
+        eventParams: utils.removeEmptyElement_v3(eventParams),
         userProperties: userProperties
       };
 
