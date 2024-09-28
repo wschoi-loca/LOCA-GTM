@@ -12,7 +12,8 @@
       'tlocashop.lottecard.co.kr',
       'dmoweb3.lottecard.co.kr',
       'dmoweb2.lottecard.co.kr',
-      'dlocashop.lottecard.co.kr'
+      'dlocashop.lottecard.co.kr',
+      'locashop.lottecard.co.kr'
     ];
 
     // 현재 페이지의 도메인이 유효한 도메인 목록에 포함되는지 확인
@@ -105,17 +106,19 @@
       sendGAPage_v3: function (object) {
         try {
           commonGAData = utils.deepCopy(object);  // 깊은 복사
-          if (isGAAndroid || isGAIOS || isDevDomain) {
+          if (isGAAndroid || isGAIOS ) {
             object.event_name = 'screen_view';
             window._gtmutils.sendGAHybrid_v3(object);
           } else {
+            console.log("::WEB OBJECT PAGE::")
+            console.log(object)
             var webData = utils.deepCopy({
                 event: 'loca_page',
                 title: object.screen_name,
-                location: object.location
-              },
-              utils.deepCopy(object.userProperties),  // 새로운 userProperties 객체
-              utils.deepCopy(object.eventParams)  // 새로운 eventParams 객체
+                location: object.location,
+                userProperties: object.userProperties,
+                eventParams : object.eventParams
+              }
             );
             window.dataLayer4.push(webData);
           }
@@ -132,14 +135,16 @@
           if (isGAAndroid || isGAIOS || isDevDomain) {
             window._gtmutils.sendGAHybrid_v3(utils.deepCopy(object));  // 깊은 복사로 이벤트 데이터 전송
           } else {
+            console.log("::WEB OBJECT EVENT::")
+            console.log(object)
             var webData = utils.deepCopy({
                 event: 'loca_event',
                 event_name: object.event_name,
                 title: object.screen_name,
-                location: object.location
-              },
-              utils.deepCopy(object.userProperties),  // 새로운 userProperties 객체
-              utils.deepCopy(object.eventParams)  // 새로운 eventParams 객체
+                location: object.location,
+                userProperties: object.userProperties,
+                eventParams : object.eventParams
+              }
             );
             window.dataLayer4.push(webData);
           }
@@ -165,12 +170,14 @@
                 event_name: eventData.event_name,
                 title: eventData.screen_name,
                 location: eventData.location,
+                userProperties: eventData.userProperties,
+                eventParams : eventData.eventParams
               },
-              utils.deepCopy(eventData.userProperties),  // 새로운 userProperties 객체
-              utils.deepCopy(eventData.eventParams)  // 새로운 eventParams 객체
             );
             var ecommerceData = utils.deepCopy({ items: utils.deepCopy(items) }, utils.deepCopy(transactions));
             utils.deepCopy(webData, { ecommerce: ecommerceData });
+            console.log("::WEB OBJECT E-commerce::")
+            console.log(webData)
             window.dataLayer4.push(webData);
           }
         } catch (e) {
@@ -345,9 +352,11 @@
         
         var event_name;
         var isPopup = data.sectionParams.is_popup ? 'popup' : 'cts';
+        if (isPopup === 'cts' && data.eventParams.is_popup) {
+          isPopup = 'popup';
+        }
         var eventTypeMapped = eventType === 'visibility' ? 'view' : 'click';
-        event_name = isPopup + '_' + eventTypeMapped;
-
+          event_name = isPopup + '_' + eventTypeMapped;
         if (Object.keys(eCommerceParams).length > 0) {
           event_name = eventType.replaceAll('-', '_');
         }
@@ -365,7 +374,7 @@
           var eCommerceClicks = ['select_item', 'add_to_cart', 'etc'];
           ep_action = eCommerceClicks.includes(event_name) ? '클릭' : '노출';
         }
-        console.log(eCommerceParams)
+        
         var ep_label
         if (Object.keys(eCommerceParams).length > 0) {
           ep_label = eCommerceParams.ecommerce.transaction_id || eCommerceParams.ecommerce.items[0].item_id || eventParams.ep_cd14_cts_nm || eventParams.ep_label_text || eventParams.ep_category_depth1 || 'n';
@@ -386,6 +395,7 @@
           var zero_value = '00000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000'
 
           var sha512_cno = window._gtm.user && window._gtm.user.sha512_cno ? window._gtm.user.sha512_cno : zero_value;
+          var memberType = window._gtm.user && window._gtm.user.mbrType ? window._gtm.user.mbrType : undefined;
           var first100Chars = sha512_cno.substring(0, 100);
           var remainingChars =  sha512_cno.substring(100);
           var ga_channel = window._gtmutils.channelMapping({{Page Hostname}}); // 채널 매핑 함수 호출
@@ -400,7 +410,24 @@
           eventParams.ep_cd122_lgn_dtti = window._gtm.user && window._gtm.user.lgnDtti ? window._gtm.user.lgnDtti : undefined;
           eventParams.ep_cd49_timestamp = {{VAR_JS_dimension49 (Time Stamp)}} ? {{VAR_JS_dimension49 (Time Stamp)}} : undefined;
 
-        }
+          window.dataLayer4 = window.dataLayer4 || [];
+          window.dataLayer4.push({
+            event: 'user_info_app',
+            user_id: sha512_cno,
+            up_cd58_mbr_group: memberType,
+
+            ep_cd10_channel_type : ga_channel,
+            ep_cd54_lgn_session_id1 : first100Chars,
+            ep_cd55_lgn_session_id2 : remainingChars + '|' + ga_channel + '|' + {{VAR_JS_dimension49 (Time Stamp)}},
+            ep_cd120_user_id1 : first100Chars,
+            ep_cd121_user_id2 : remainingChars,
+            ep_cd4_lgn_yn : window._gtm.isLogin ? "1" : "U",
+            ep_cd5_lgn_type : window._gtm.user && window._gtm.user.lgnType ? window._gtm.user.lgnType : undefined,
+            ep_cd122_lgn_dtti : window._gtm.user && window._gtm.user.lgnDtti ? window._gtm.user.lgnDtti : undefined,
+            ep_cd49_timestamp : {{VAR_JS_dimension49 (Time Stamp)}} ? {{VAR_JS_dimension49 (Time Stamp)}} : undefined
+          });
+
+        };
         
        // 새 객체를 만들어서 복사된 값과 추가 속성을 결합
         var eventParams = Object.assign({}, eventParams, sectionParams, pageParams, {
@@ -420,6 +447,9 @@
 
       if (Object.keys(eCommerceParams).length > 0) {
         var items = eCommerceParams.ecommerce ? eCommerceParams.ecommerce.items : [];
+        items = items.map(function(item) {
+        return window._gtmutils.removeEmptyElement_v3(item);
+        });
         var transactions = window._gtmutils.removeEmptyElement_v3(eCommerceParams.ecommerce || {});
         window._gtmutils.sendGAEcommerce_v3(gaFinalData, items, transactions);
       } else {
