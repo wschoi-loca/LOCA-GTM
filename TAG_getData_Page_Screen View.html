@@ -7,7 +7,7 @@
           // eventParams 객체 정의     
           var eventParams = {
             ep_cd77_cur_page_title: {{VAR_JS_depthAll}},
-            ep_cd78_cur_page_url: {{VAR_URLpath_decoded}}, // 도메인 제외 full url
+            ep_cd78_cur_page_url: {{Page Path}}, // 페이지 Path
             ep_new_tag: 'Y',
             ep_cd15_page_depth1: {{VAR_JS_1depth}},
             ep_cd16_page_depth2: {{VAR_JS_2depth}},
@@ -22,12 +22,14 @@
             ep_cd123_cur_page_fullurl: {{VAR_fullURL_decoded}},
           };
 
-          var zero_value = '00000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000'
+          var zero_value = '0'.repeat(128);
 
-          var sha512_cno = window._gtm.user && window._gtm.user.sha512_cno ? window._gtm.user.sha512_cno : zero_value;
+          var sha512_cno = window._gtm.user.sha512_cno ? window._gtm.user.sha512_cno : ({{VAR_DL_user_id}} && {{VAR_DL_user_id}} !== zero_value ? {{VAR_DL_user_id}} : zero_value);
           var first100Chars = sha512_cno.substring(0, 100);
           var remainingChars =  sha512_cno.substring(100);
           var ga_channel = window._gtmutils.channelMapping({{Page Hostname}}); // 채널 매핑 함수 호출
+
+          var memberType = window._gtm.user && window._gtm.user.mbrType ? (window._gtm.user.mbrType === "MBR" ? "정회원" : "준회원") : undefined
 
           eventParams.ep_cd10_channel_type = ga_channel;
           eventParams.ep_cd54_lgn_session_id1 = first100Chars;
@@ -38,12 +40,33 @@
           eventParams.ep_cd5_lgn_type = window._gtm.user && window._gtm.user.lgnType ? window._gtm.user.lgnType : undefined;     
           eventParams.ep_cd122_lgn_dtti = window._gtm.user && window._gtm.user.lgnDtti ? window._gtm.user.lgnDtti : undefined;
           eventParams.ep_cd49_timestamp = {{VAR_JS_dimension49 (Time Stamp)}} ? {{VAR_JS_dimension49 (Time Stamp)}} : undefined;
+  
+            if(sha512_cno !== zero_value) {
+            window.dataLayer4 = window.dataLayer4 || [];
+            window.dataLayer4.push({
+              event: 'user_info_app',
+              user_id: sha512_cno,
+              up_cd58_mbr_group: memberType,
+
+              ep_cd10_channel_type : ga_channel,
+              ep_cd54_lgn_session_id1 : first100Chars,
+              ep_cd55_lgn_session_id2 : remainingChars + '|' + ga_channel + '|' + {{VAR_JS_dimension49 (Time Stamp)}},
+              ep_cd120_user_id1 : first100Chars,
+              ep_cd121_user_id2 : remainingChars,
+              ep_cd4_lgn_yn : window._gtm.isLogin ? "1" : "U",
+              ep_cd5_lgn_type : window._gtm.user && window._gtm.user.lgnType ? window._gtm.user.lgnType : undefined,
+              ep_cd122_lgn_dtti : window._gtm.user && window._gtm.user.lgnDtti ? window._gtm.user.lgnDtti : undefined,
+              ep_cd49_timestamp : {{VAR_JS_dimension49 (Time Stamp)}} ? {{VAR_JS_dimension49 (Time Stamp)}} : undefined
+            });
+          }
+  
+  
 
           window._gtmutils.removeEmptyElement_v3(eventParams);
           // userProperties 객체 정의
           var userProperties = {};
-          userProperties.user_id = window._gtm.user && window._gtm.user.sha512_cno ? window._gtm.user.sha512_cno : zero_value;
-          userProperties.up_cd58_mbr_group = window._gtm.user && window._gtm.user.mbrType ? (window._gtm.user.mbrType === "MBR" ? "정회원" : "준회원") : undefined;
+          userProperties.user_id = sha512_cno;
+          userProperties.up_cd58_mbr_group = memberType;
 
           // pageData를 Object.assign으로 병합
           var pageData = Object.assign({}, {
