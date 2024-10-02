@@ -1,0 +1,87 @@
+event
+name
+page_location
+page_title
+ep_cd57_screenid
+ep_category
+ep_action
+ep_label
+ep_label_text
+ep_new_tag
+ep_category_depth1
+ep_category_depth2
+ep_category_depth3
+ep_cd15_page_depth1
+ep_cd16_page_depth2
+ep_cd52_page_depth3
+ep_page_depth4
+ep_page_depth5
+ep_cd77_cur_page_title
+ep_cd78_cur_page_url
+ep_cd11_native_yn
+ep_cd43_act_id
+ep_cd44_ex_act_id
+ep_cd45_ex_act_rpl_id
+ep_cd56_cms_cno
+ep_cd25_srch_keyword
+ep_srch_keyword_type
+ep_cd26_srch_result
+ep_srch_result
+ep_cd27_srch_res_clk_nm
+ep_cd12_card_name
+ep_card_name
+ep_card_code
+ep_cd64_card_apply_code
+ep_cd65_card_apply_kind
+ep_cd13_fn_pd_nm
+ep_cd17_fn_loan_amt
+ep_cd19_rvo_egm_stt_rt
+ep_cd20_rvo_egm_stt_te
+ep_cd48_pd_apply_nm
+ep_cd12_card_name
+ep_card_name
+ep_card_code
+ep_cd64_card_apply_code
+ep_cd65_card_apply_kind
+ep_cd13_fn_pd_nm
+ep_cd17_fn_loan_amt
+ep_cd19_rvo_egm_stt_rt
+ep_cd20_rvo_egm_stt_te
+ep_cd14_cts_nm
+ep_cd42_cts_id
+ep_cd79_sub_cts_id
+ep_cd24_trn_cts_type
+ep_section_index
+ep_contents_index
+user_id(_id)
+up_cd58_mbr_group
+up_cd1_cid
+up_cd3_ad_id
+origin
+ep_cd4_lgn_yn
+ep_cd5_lgn_type
+ep_cd10_channel_type
+ep_cd49_timestamp
+ep_cd54_lgn_session_id1
+ep_cd55_lgn_session_id2
+ep_cd120_user_id1
+ep_cd121_user_id2
+ep_cd122_lgn_dtti
+ep_cd123_cur_page_fullurl
+ga_event_origin(_o)
+engagement_time_msec(_et)
+ga_previous_class(_pc)
+ga_previous_id(_pi)
+ga_previous_screen(_pn)
+ga_screen_class(_sc)
+ga_screen_id(_si)
+ga_screen(_sn)
+manual_tracking(_mst)
+
+10-01 11:59:54.344 V/FA-SVC  ( 6110): Setting user property: user_id(_id), 2236e0d92a2edebd881511a2a9c4610045218a7feb01f14d9bb48f6872e9ae89072804b92132d27aff4f27cb2427a1df50ff04698b8b4301ce227a51a2f465e6
+10-01 11:59:54.349 V/FA-SVC  ( 6110): Setting user property: up_cd58_mbr_group, 정회원
+10-01 11:59:54.354 V/FA-SVC  ( 6110): Setting user property: up_cd1_cid, 231f56200bb1c44f06b7870d9348df36
+10-01 11:59:54.359 V/FA-SVC  ( 6110): Setting user property: up_cd3_ad_id, 30ba2430-174e-42de-9329-455344762840
+10-01 11:59:54.366 V/FA      (25542): Recording user engagement, ms: 17921
+10-01 11:59:54.367 V/FA-SVC  ( 6110): Logging event: origin=app,name=screen_view(_vs),params=Bundle[{ep_cd122_lgn_dtti=2024-10-01 11:57:32, ep_cd15_page_depth1=issuance, ep_cd4_lgn_yn=1, ep_cd54_lgn_session_id1=2236e0d92a2edebd881511a2a9c4610045218a7feb01f14d9bb48f6872e9ae89072804b92132d27aff4f27cb2427a1df50ff, ep_cd121_user_id2=04698b8b4301ce227a51a2f465e6, ep_cd10_channel_type=APP_TEST, ep_cd120_user_id1=2236e0d92a2edebd881511a2a9c4610045218a7feb01f14d9bb48f6872e9ae89072804b92132d27aff4f27cb2427a1df50ff, ep_cd49_timestamp=2024-10-01T11:59:54.33+09:00, ep_cd11_native_yn=SPA, ep_cd123_cur_page_fullurl=http://dmoweb3.lottecard.co.kr/front/card/issuance/, ep_cd78_cur_page_url=/front/card/issuance/, ep_cd55_lgn_session_id2=04698b8b4301ce227a51a2f465e6|APP_TEST|2024-10-01T11:59:53.830+09:00, ga_event_origin(_o)=app, engagement_time_msec(_et)=17921, ga_previous_class(_pc)=JspWebViewActivity, ga_previous_id(_pi)=-5878951987229812738, ga_previous_screen(_pn)=MY>보유카드조회>이용가능카드, ga_screen_class(_sc)=JspWebViewActivity, ga_screen_id(_si)=-5878951987229812737, ga_screen(_sn)=issuance, manual_tracking(_mst)=1, ep_new_tag=Y, ep_cd5_lgn_type=id, ep_cd77_cur_page_title=issuance}]
+10-01 11:59:54.370 V/FA-SVC  ( 6110): Upload scheduled in approximately ms: 2705580
