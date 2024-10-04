@@ -108,7 +108,10 @@
           } else {
             var eventParams = utils.deepCopy(object.eventParams);  // 새로운 eventParams 객체
             var userProperties = utils.deepCopy(object.userProperties);  // 새로운 userProperties 객체
-            var ecommerce = object.ecommerce ? utils.deepCopy(object.ecommerce) : {};  
+            var ecommerce = object.ecommerce ? utils.deepCopy(object.ecommerce) : {};
+            eventParams.transaction_id = object.ecommerce && object.ecommerce.transaction_id ? utils.deepCopy(object.ecommerce.transaction_id) : '';  // transaction_id가 없으면 빈 문자열
+            eventParams.value = object.ecommerce && object.ecommerce.value ? utils.deepCopy(object.ecommerce.value) : '';  // value가 없으면 빈 문자열
+            var eventParams = window._gtmutils.removeEmptyElement_v3(eventParams); 
             var items = ecommerce.items ? ecommerce.items : '';  // items가 없으면 빈 문자열
             GAData = utils.deepCopy({
               event_name: object.event_name,
@@ -116,6 +119,7 @@
               location: object.location,
               eventParams: eventParams,
               userProperties: userProperties,
+              currency: 'KRW',
               items: items 
             });
           }
@@ -150,7 +154,7 @@
           screenObject = utils.removeEmptyElement_v3(screenObject);
           screenObject.eventParams = utils.removeEmptyElement_v3(screenObject.eventParams);
           screenObject.userProperties = utils.removeEmptyElement_v3(screenObject.userProperties);
-          if (isGAAndroid || isGAIOS || isDevDomain) {
+          if (isGAAndroid || isGAIOS ) {
             object.event_name = 'screen_view';
             utils.sendGAHybrid_v3(screenObject);
           } else {
@@ -180,7 +184,7 @@
           eventObject = utils.removeEmptyElement_v3(eventObject);
           eventObject.eventParams = utils.removeEmptyElement_v3(eventObject.eventParams);
           eventObject.userProperties = utils.removeEmptyElement_v3(eventObject.userProperties);
-          if (isGAAndroid || isGAIOS || isDevDomain) {
+          if (isGAAndroid || isGAIOS ) {
             utils.sendGAHybrid_v3(utils.deepCopy(eventObject));  // 깊은 복사로 이벤트 데이터 전송
           } else {
             var webData = utils.deepCopy({
@@ -219,7 +223,7 @@
               return utils.removeEmptyElement_v3(item);
             });
 
-            if (isGAAndroid || isGAIOS || isDevDomain) {
+            if (isGAAndroid || isGAIOS ) {
             utils.sendGAHybrid_v3(ecData);
           } else {
             var webData = utils.deepCopy(
