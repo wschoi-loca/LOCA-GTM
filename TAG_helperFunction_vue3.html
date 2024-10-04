@@ -23,6 +23,19 @@
 
     // 앱으로 데이터 전달 함수
     var utils = {
+      getCookie: function(name) {
+        var value = '; ' + document.cookie;
+        var parts = value.split('; ' + name + '=');
+        if (parts.length === 2) return parts.pop().split(';').shift();
+      },
+
+      setCookie: function(name, value, days) {
+        var date = new Date();
+        date.setTime(date.getTime() + (days * 24 * 60 * 60 * 1000)); // 유효기간 설정
+        var expires = 'expires=' + date.toUTCString();
+        document.cookie = name + '=' + value + '; ' + expires + '; path=/';
+      },
+
       hashSha512_v3: function (notHashed) {
         var userId = notHashed; // 데이터 레이어의 사용자 ID를 가져옴
         if (userId) {
@@ -415,7 +428,7 @@
         if (isPopup === 'cts' && data.eventParams.is_popup) {
           isPopup = 'popup';
         }
-        var eventTypeMapped = eventType === 'visibility' ? 'view' : 'click';
+        var eventTypeMapped = eventType === 'visibility' ? 'view' : eventType;
           event_name = isPopup + '_' + eventTypeMapped;
         if (Object.keys(eCommerceParams).length > 0) {
           event_name = eventType.replaceAll('-', '_');
@@ -460,9 +473,11 @@
                  ? window._gtm.user.sha512_cno   // 1. window._gtm.user.sha512_cno
                  : custom_sha512_cno             // 2. custom_sha512_cno
                    ? custom_sha512_cno
-                   : {{VAR_DL_user_id}} && {{VAR_DL_user_id}} !== zero_value // 3. VAR_DL_user_id
-                     ? {{VAR_DL_user_id}}
-                     : zero_value;               // 4. zero_value
+                   : utils.getCookie('gaUserCNO') 
+                    ? utils.getCookie('gaUserCNO') 
+                    : {{VAR_DL_user_id}} && {{VAR_DL_user_id}} !== zero_value // 3. VAR_DL_user_id
+                      ? {{VAR_DL_user_id}}
+                      : zero_value;               // 4. zero_value
           var memberType = window._gtm.user && window._gtm.user.mbrType ? (window._gtm.user.mbrType === "MBR" ? "정회원" : "준회원") : undefined
           var first100Chars = sha512_cno.substring(0, 100);
           var remainingChars =  sha512_cno.substring(100);
@@ -481,6 +496,9 @@
           eventParams.ep_cd49_timestamp = window._gtmutils.getTimeStamp_v3()
           
           if(sha512_cno !== zero_value && sha512_cno.length === 128) {
+            if (utils.getCookie('gaUserCNO') !== sha512_cno) {
+              utils.setCookie('gaUserCNO', sha512_cno, 30);
+            }
             window.dataLayer4 = window.dataLayer4 || [];
             window.dataLayer4.push({
               event: 'user_info_app',
@@ -551,7 +569,9 @@
       channelMapping: utils.channelMapping,
       assignIfExists_v3: utils.assignIfExists_v3,
       getTimeStamp_v3: utils.getTimeStamp_v3,
-      hashSha512_v3: utils.hashSha512_v3
+      hashSha512_v3: utils.hashSha512_v3,
+      setCookie: utils.setCookie,
+      getCookie: utils.getCookie
     };
   })();
 </script>
