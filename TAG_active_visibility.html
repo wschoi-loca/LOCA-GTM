@@ -1,0 +1,71 @@
+<script>
+  (function() {
+    var startTime = Date.now();
+    var timestamp = window._gtmutils.getTimeStamp_v3();
+
+    // GTM 데이터에서 페이지 제목을 가져오는 함수
+    function getPageTitle(element) {
+      var dataGtmPage = element.closest('[data-gtm-page]');
+      if (dataGtmPage) {
+        var dataGtmPageBody = window._gtmutils.getGtmBodyData_v3(dataGtmPage);
+        return dataGtmPageBody.page_title || '';
+      }
+      return '';
+    }
+
+    // 페이지 관련 파라미터를 구성하는 함수
+    function getPageParams(element) {
+      return {
+        ep_cd77_cur_page_title: {{VAR_JS_depthAll}}||getPageTitle(element),
+        ep_cd78_cur_page_url: {{Page Path}}, // 도메인 제외 full URL
+        ep_new_tag: 'Y',
+        ep_cd15_page_depth1: {{VAR_JS_1depth}},
+        ep_cd16_page_depth2: {{VAR_JS_2depth}},
+        ep_cd52_page_depth3: {{VAR_JS_3depth}},
+        ep_page_depth4: {{VAR_JS_4depth}},
+        ep_page_depth5: {{VAR_JS_5depth}},
+        ep_cd11_native_yn: 'SPA',
+        ep_cd43_act_id: {{VAR_pageData_act_id}},
+        ep_cd44_ex_act_id: {{VAR_pageData_ex_act_id}},
+        ep_cd45_ex_act_rpl_id: {{VAR_pageData_ex_act_rpl_id}},
+        ep_cd56_cms_cno: {{VAR_pageData_cmscno}},
+        ep_cd123_cur_page_fullurl: {{VAR_fullURL_decoded}},
+      };
+    }
+
+    var checkGtmUserInterval = setInterval(function() {
+      try {
+        if (window._gtm && window._gtm.user || Date.now() - startTime > 1000) {
+
+          (function (element) {
+            try {
+              // eventParams 객체 구성 후 handleEvent_v3 호출
+              var pageParams = getPageParams(element);
+              return window._gtmutils.handleEvent_v3(element, 'active-visibility', pageParams);
+            } catch (error) {
+              // 오류 발생 시 데이터 레이어에 오류 정보 푸시
+              dataLayer4.push({
+                event: 'error_callHandleEvent_active-visibility',
+                event_name: 'error_callHandleEvent_active-visibility',
+                error_message: 'handleEvent: ' + error.message,
+                page_path: window.location.pathname,
+                event_type: 'active-visibility'
+              });
+            }
+          })({{Click Element}});
+
+          // Stop the interval once window._gtm.user exists
+          clearInterval(checkGtmUserInterval);
+        }
+      } catch (error) {
+        dataLayer4.push({
+          event: 'error_callHandleEvent_pageview',
+          event_name: 'error_callHandleEvent_pageview',
+          error_message: 'handleEvent: ' + error.message,
+          page_path: window.location.pathname,
+          event_type: 'page'
+        });
+      }
+    }, 100); // 0.1 seconds interval
+  })();
+</script>

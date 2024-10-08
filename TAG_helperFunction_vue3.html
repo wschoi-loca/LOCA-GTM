@@ -398,7 +398,7 @@
         { source: 'label1', target: 'ep_category_depth1' },
         { source: 'label2', target: 'ep_category_depth2' },
         { source: 'label3', target: 'ep_category_depth3' },
-        { source: 'index', target: 'ep_section_index' }
+        { source: 'index', target: 'ep_vertical_index' }
       ]);
 
       
@@ -420,7 +420,7 @@
         { source: 'cts_name', target: 'ep_cd14_cts_nm' },
         { source: 'cts_id', target: 'ep_cd42_cts_id' },
         { source: 'cts_sub_id', target: 'ep_cd79_sub_cts_id' },
-        { source: 'index', target: 'ep_contents_index' }
+        { source: 'index', target: 'ep_horizontal_index' }
       ]);
 
       if(eventType !== 'screen_view') {
@@ -456,8 +456,8 @@
         }  else {
           var id = eventParams.ep_cd42_cts_id || 'n';
           var sid = eventParams.ep_cd79_sub_cts_id || 'n';
-          var or1 = eventParams.ep_section_index || 'n';
-          var or2 = eventParams.ep_contents_index || 'n';
+          var or1 = eventParams.ep_vertical_index || 'n';
+          var or2 = eventParams.ep_horizontal_index || 'n';
           var de = eventParams.ep_cd14_cts_nm || eventParams.ep_label_text || 'n';
           var clk = eventParams.ep_label_text || 'n';
       

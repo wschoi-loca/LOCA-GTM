@@ -1,0 +1,24 @@
+<script>
+  (function() {
+    var startTime = Date.now();
+    var timestamp = window._gtmutils.getTimeStamp_v3();
+    var checkGtmUserInterval = setInterval(function() {
+      try {
+        if (window._gtm && window._gtm.user || Date.now() - startTime > 1000) {
+
+
+          // Stop the interval once window._gtm.user exists
+          clearInterval(checkGtmUserInterval);
+        }
+      } catch (error) {
+        dataLayer4.push({
+          event: 'error_callHandleEvent_pageview',
+          event_name: 'error_callHandleEvent_pageview',
+          error_message: 'handleEvent: ' + error.message,
+          page_path: window.location.pathname,
+          event_type: 'page'
+        });
+      }
+    }, 100); // 0.1 seconds interval
+  })();
+</script>

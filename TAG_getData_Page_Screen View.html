@@ -58,8 +58,8 @@
           eventParams.ep_cd49_timestamp = timestamp;
   
           if(sha512_cno !== zero_value && sha512_cno.length === 128) {
-            if (utils.getCookie('gaUserCNO') !== sha512_cno) {
-              utils.setCookie('gaUserCNO', sha512_cno, 30);
+            if (window._gtmutils.getCookie('gaUserCNO') !== sha512_cno) {
+              window._gtmutils.setCookie('gaUserCNO', sha512_cno, 30);
             }
             window.dataLayer4 = window.dataLayer4 || [];
             window.dataLayer4.push({
