@@ -312,14 +312,16 @@
       if (window._gtm) {
         var zero_value = '0'.repeat(128);
         var custom_sha512_cno = window._gtm.user && window._gtm.user.cno ? window._gtmutils.hashSha512_v3(window._gtm.user.cno): '';
-        // 우선순위에 따라 sha512_cno 설정
-        var sha512_cno = window._gtm.user && window._gtm.user.sha512_cno
+          // 우선순위에 따라 sha512_cno 설정
+          var sha512_cno = window._gtm.user && window._gtm.user.sha512_cno
                  ? window._gtm.user.sha512_cno   // 1. window._gtm.user.sha512_cno
                  : custom_sha512_cno             // 2. custom_sha512_cno
                    ? custom_sha512_cno
-                   : {{VAR_DL_user_id}} && {{VAR_DL_user_id}} !== zero_value // 3. VAR_DL_user_id
-                     ? {{VAR_DL_user_id}}
-                     : zero_value;               // 4. zero_value
+                   : utils.getCookie('gaUserCNO')  //3. utils.getCookie('gaUserCNO')
+                    ? utils.getCookie('gaUserCNO') 
+                    : {{VAR_DL_user_id}} && {{VAR_DL_user_id}} !== zero_value // 4. VAR_DL_user_id
+                      ? {{VAR_DL_user_id}}
+                      : zero_value;               // 5. zero_value
         userProperties.user_id = sha512_cno
         userProperties.up_cd58_mbr_group = window._gtm.user && window._gtm.user.mbrType ? (window._gtm.user.mbrType === "MBR" ? "정회원" : "준회원") : undefined;
       }
@@ -442,7 +444,7 @@
           ep_category = isPopup === 'popup' ? '팝업_' + pageParams.ep_cd15_page_depth1 : '콘텐츠_' + category + '_메인_' + pageParams.ep_cd15_page_depth1;
         }
 
-        var ep_action = eventType === 'visibility' ? '노출' : '클릭';
+        var ep_action = eventType.includes('visibility') ? '노출' : '클릭';
         if (Object.keys(eCommerceParams).length > 0) {
           var eCommerceClicks = ['select_item', 'add_to_cart', 'etc'];
           ep_action = eCommerceClicks.includes(event_name) ? '클릭' : '노출';
@@ -473,11 +475,11 @@
                  ? window._gtm.user.sha512_cno   // 1. window._gtm.user.sha512_cno
                  : custom_sha512_cno             // 2. custom_sha512_cno
                    ? custom_sha512_cno
-                   : utils.getCookie('gaUserCNO') 
+                   : utils.getCookie('gaUserCNO')  //3. utils.getCookie('gaUserCNO')
                     ? utils.getCookie('gaUserCNO') 
-                    : {{VAR_DL_user_id}} && {{VAR_DL_user_id}} !== zero_value // 3. VAR_DL_user_id
+                    : {{VAR_DL_user_id}} && {{VAR_DL_user_id}} !== zero_value // 4. VAR_DL_user_id
                       ? {{VAR_DL_user_id}}
-                      : zero_value;               // 4. zero_value
+                      : zero_value;               // 5. zero_value
           var memberType = window._gtm.user && window._gtm.user.mbrType ? (window._gtm.user.mbrType === "MBR" ? "정회원" : "준회원") : undefined
           var first100Chars = sha512_cno.substring(0, 100);
           var remainingChars =  sha512_cno.substring(100);
