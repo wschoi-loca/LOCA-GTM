@@ -45,8 +45,8 @@
             } catch (error) {
               // 오류 발생 시 데이터 레이어에 오류 정보 푸시
               dataLayer4.push({
-                event: 'error_callHandleEvent_active-visibility',
-                event_name: 'error_callHandleEvent_active-visibility',
+                event: 'error_callHandleEvent_active-visibility_handler',
+                event_name: 'error_callHandleEvent_active-visibility_handler',
                 error_message: 'handleEvent: ' + error.message,
                 page_path: window.location.pathname,
                 event_type: 'active-visibility'
@@ -59,11 +59,11 @@
         }
       } catch (error) {
         dataLayer4.push({
-          event: 'error_callHandleEvent_pageview',
-          event_name: 'error_callHandleEvent_pageview',
+          event: 'error_callHandleEvent_active-visibility',
+          event_name: 'error_callHandleEvent_active-visibility',
           error_message: 'handleEvent: ' + error.message,
           page_path: window.location.pathname,
-          event_type: 'page'
+          event_type: 'active-visibility'
         });
       }
     }, 100); // 0.1 seconds interval
