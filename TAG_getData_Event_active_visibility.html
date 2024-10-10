@@ -35,7 +35,7 @@
 
     var checkGtmUserInterval = setInterval(function() {
       try {
-        if (window._gtm && window._gtm.user || Date.now() - startTime > 1000) {
+        if (window._gtm && window._gtm.user || Date.now() - startTime > 3000) {
 
           (function (element) {
             try {
@@ -66,6 +66,6 @@
           event_type: 'active-visibility'
         });
       }
-    }, 100); // 0.1 seconds interval
+    }, 300); // 0.1 seconds interval
   })();
 </script>
