@@ -38,8 +38,6 @@
                       ? {{VAR_DL_user_id}}
                       : zero_value;               // 5. zero_value
 
-          console.log(sha512_cno)
-
           var first100Chars = sha512_cno.substring(0, 100);
           var remainingChars =  sha512_cno.substring(100);
           var ga_channel = window._gtmutils.channelMapping({{Page Hostname}}); // 채널 매핑 함수 호출

@@ -5,16 +5,16 @@
       var pageParams = window._gtmutils.getDataGtmPage(element);
       var mappingPageParams = window._gtmutils.mappinggDataGtmPage(pageParams);
 
-      return window._gtmutils.handleEvent_v3(element, 'visibility', mappingPageParams);
+      return window._gtmutils.handleEvent_v3(element, 'click', mappingPageParams);
 
     } catch (error) {
       // 오류 발생 시 데이터 레이어에 오류 정보 푸시
       dataLayer4.push({
-        event: 'error_callHandleEvent_visibility_thing',
-        event_name: 'error_callHandleEvent_visibility_thing',
+        event: 'error_callHandleEvent_click_v2',
+        event_name: 'error_callHandleEvent_click_v2',
         error_message: 'handleEvent: ' + error.message,
         page_path: window.location.pathname,
-        event_type: 'visibility'
+        event_type: 'click_v2'
       });
     }
   })({{Click Element}});
