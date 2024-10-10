@@ -16,7 +16,7 @@
     // 페이지 관련 파라미터를 구성하는 함수
     function getPageParams(element) {
       return {
-        ep_cd77_cur_page_title: {{VAR_JS_depthAll}}||getPageTitle(element),
+        ep_cd77_cur_page_title: {{VAR_JS_depthAll}} || getPageTitle(element),
         ep_cd78_cur_page_url: {{Page Path}}, // 도메인 제외 full URL
         ep_new_tag: 'Y',
         ep_cd15_page_depth1: {{VAR_JS_1depth}},
@@ -36,14 +36,29 @@
     var checkGtmUserInterval = setInterval(function() {
       try {
         if (window._gtm && window._gtm.user || Date.now() - startTime > 3000) {
-
-          (function (element) {
+          
+          (function executeEventHandler(element) {
             try {
+              var zero_value = '0'.repeat(128);
+
+              var custom_sha512_cno = window._gtm.user && window._gtm.user.cno ? window._gtmutils.hashSha512_v3(window._gtm.user.cno) : '';
+              // 우선순위에 따라 sha512_cno 설정
+              var sha512_cno = window._gtm.user && window._gtm.user.sha512_cno
+                    ? window._gtm.user.sha512_cno   // 1. window._gtm.user.sha512_cno
+                    : custom_sha512_cno             // 2. custom_sha512_cno
+                      ? custom_sha512_cno
+                      : window._gtmutils.getCookie('gaUserCNO')  // 3. utils.getCookie('gaUserCNO')
+                        ? window._gtmutils.getCookie('gaUserCNO')
+                        : {{VAR_DL_user_id}} && {{VAR_DL_user_id}} !== zero_value // 4. VAR_DL_user_id
+                          ? {{VAR_DL_user_id}}
+                          : zero_value;               // 5. zero_value
+
               // eventParams 객체 구성 후 handleEvent_v3 호출
               var pageParams = getPageParams(element);
+              // 성공적으로 실행된 경우 반환
               return window._gtmutils.handleEvent_v3(element, 'active-visibility', pageParams);
             } catch (error) {
-              // 오류 발생 시 데이터 레이어에 오류 정보 푸시
+              // 오류 발생 시 데이터 레이어에 오류 정보 푸시하고 다시 시도
               dataLayer4.push({
                 event: 'error_callHandleEvent_active-visibility_handler',
                 event_name: 'error_callHandleEvent_active-visibility_handler',
@@ -51,6 +66,10 @@
                 page_path: window.location.pathname,
                 event_type: 'active-visibility'
               });
+              // 에러 발생 시 0.3초 후 재시도
+              setTimeout(function() {
+                executeEventHandler(element);
+              }, 300);
             }
           })({{Click Element}});
 
@@ -66,6 +85,6 @@
           event_type: 'active-visibility'
         });
       }
-    }, 300); // 0.1 seconds interval
+    }, 300); // 0.3 seconds interval
   })();
 </script>

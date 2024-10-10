@@ -1,0 +1,68 @@
+<script>
+  // 페이지 관련 파라미터를 구성하는 함수
+  function mappinggDataGtmPage(pageParams) {
+    var result = {
+      ep_new_tag: 'Y', // Always include this field
+      ep_cd11_native_yn: 'SPA' // Always include this field
+    };
+
+    // Array of mappings for direct properties
+    var mappings = [
+      { key: 'page_title', target: 'ep_cd77_cur_page_title' },
+      { key: 'url_path', target: 'ep_cd78_cur_page_url' },
+      { key: 'depth1', target: 'ep_cd15_page_depth1' },
+      { key: 'depth2', target: 'ep_cd16_page_depth2' },
+      { key: 'depth3', target: 'ep_cd52_page_depth3' },
+      { key: 'depth4', target: 'ep_page_depth4' },
+      { key: 'depth5', target: 'ep_page_depth5' },
+      { key: 'full_url', target: 'ep_cd123_cur_page_fullurl' }
+    ];
+
+    // Add direct properties if they exist
+    mappings.forEach(function(mapping) {
+      if (pageParams[mapping.key]) {
+        result[mapping.target] = pageParams[mapping.key];
+      }
+    });
+
+    // Array of mappings for nested queryParams properties
+    var queryParamsMappings = [
+      { key: 'act_id', target: 'ep_cd43_act_id' },
+      { key: 'ex_act_id', target: 'ep_cd44_ex_act_id' },
+      { key: 'ex_act_rpl_id', target: 'ep_cd45_ex_act_rpl_id' },
+      { key: 'cms_cno', target: 'ep_cd56_cms_cno' }
+    ];
+
+    // Add queryParams properties if they exist
+    if (pageParams.queryParams) {
+      queryParamsMappings.forEach(function(mapping) {
+        if (pageParams.queryParams[mapping.key]) {
+          result[mapping.target] = pageParams.queryParams[mapping.key];
+        }
+      });
+    }
+
+    return result;
+  }
+
+
+  (function (element) {
+    try {
+      
+      // eventParams 객체 구성 후 handleEvent_v3 호출
+      var pageParams = window._gtmutils.getDataGtmPage();
+      var mappingPageParams = g
+      return window._gtmutils.handleEvent_v3(element, 'visibility', pageParams);
+
+    } catch (error) {
+      // 오류 발생 시 데이터 레이어에 오류 정보 푸시
+      dataLayer4.push({
+        event: 'error_callHandleEvent_visibility',
+        event_name: 'error_callHandleEvent_visibility',
+        error_message: 'handleEvent: ' + error.message,
+        page_path: window.location.pathname,
+        event_type: 'visibility'
+      });
+    }
+  })({{Click Element}});
+</script>

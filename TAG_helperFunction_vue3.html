@@ -23,6 +23,120 @@
 
     // 앱으로 데이터 전달 함수
     var utils = {
+      mappinggDataGtmPage : function (pageParams) {
+        var result = {
+          ep_new_tag: 'Y', // Always include this field
+          ep_cd11_native_yn: 'SPA' // Always include this field
+        };
+
+        // Array of mappings for direct properties
+        var mappings = [
+          { key: 'page_title', target: 'ep_cd77_cur_page_title' },
+          { key: 'url_path', target: 'ep_cd78_cur_page_url' },
+          { key: 'depth1', target: 'ep_cd15_page_depth1' },
+          { key: 'depth2', target: 'ep_cd16_page_depth2' },
+          { key: 'depth3', target: 'ep_cd52_page_depth3' },
+          { key: 'depth4', target: 'ep_page_depth4' },
+          { key: 'depth5', target: 'ep_page_depth5' },
+          { key: 'full_url', target: 'ep_cd123_cur_page_fullurl' }
+        ];
+
+        // Add direct properties if they exist
+        mappings.forEach(function(mapping) {
+          if (pageParams[mapping.key]) {
+            result[mapping.target] = pageParams[mapping.key];
+          }
+        });
+
+        // Array of mappings for nested queryParams properties
+        var queryParamsMappings = [
+          { key: 'act_id', target: 'ep_cd43_act_id' },
+          { key: 'ex_act_id', target: 'ep_cd44_ex_act_id' },
+          { key: 'ex_act_rpl_id', target: 'ep_cd45_ex_act_rpl_id' },
+          { key: 'cms_cno', target: 'ep_cd56_cms_cno' },
+          { key: 'word', target: 'ep_cd25_srch_keyword' } // 띵샵 검색어
+        ];
+
+        // Add queryParams properties if they exist
+        if (pageParams.queryParams) {
+          queryParamsMappings.forEach(function(mapping) {
+            if (pageParams.queryParams[mapping.key]) {
+              result[mapping.target] = pageParams.queryParams[mapping.key];
+            }
+          });
+        }
+
+        return result;
+      },
+        // GTM 데이터에서 페이지 제목을 가져오는 함수
+      getDataGtmPage : function (element) {
+        var dataGtmPage = element.closest('[data-gtm-page]');
+        var dataGtmPageBody = dataGtmPage ? window._gtmutils.getGtmBodyData_v3(dataGtmPage) : {};
+
+        // Determine page_title based on the data-gtm-page or URL path
+        if (!dataGtmPageBody.page_title) {
+          var pathSegments = decodeURIComponent(document.location.pathname).split('/').filter(Boolean);
+          if (pathSegments[0] === 'spa' || pathSegments[0] === 'app') {
+            // If the first segment is 'spa' or 'app', start from the second segment
+            pathSegments.shift();
+          }
+          dataGtmPageBody.page_title = pathSegments.join('>');
+        }
+
+        // Initialize the result object with default values
+        var result = Object.assign({}, dataGtmPageBody);
+
+        // Process page_title if available
+        if (dataGtmPageBody && dataGtmPageBody.page_title) {
+          var titleParts = dataGtmPageBody.page_title.split('>');
+          var depths = {};
+
+          // Use forEach to iterate over titleParts
+          titleParts.forEach(function(part, index) {
+            if (index < 4) {
+              depths['depth' + (index + 1)] = part;
+            } else if (index === 4) {
+              // Combine the remaining parts for depth5
+              depths['depth5'] = titleParts.slice(4).join('>');
+            }
+          });
+
+          // Add depth information to the result
+          Object.assign(result, depths);
+        }
+
+        // Parse query parameters from the URL
+        var queryParams = {};
+        var queryString = document.location.search.slice(1); // Remove the "?" at the start
+        if (queryString) {
+          queryString.split('&').forEach(function(param) {
+            var [key, value] = param.split('=');
+            if (value) {
+              queryParams[decodeURIComponent(key)] = decodeURIComponent(value);
+            }
+          });
+        }
+
+        // Add decoded URL information and query parameters to the result
+        Object.assign(result, {
+          full_url: decodeURIComponent(document.location.href),
+          url_path: decodeURIComponent(document.location.pathname),
+          queryParams: queryParams
+        });
+
+        return result;
+      },
+        /**
+         * Example return value:
+        {
+            "page_title": "혜택>반띵메인",
+            "screen_id": "MA_6_1",
+            "depth1": "혜택",
+            "depth2": "반띵메인",
+            "full_url": "https://dmoweb2.lottecard.co.kr/spa/benefit/halfThing?gtm_debug=1728537918613",
+            "url_path": "/spa/benefit/halfThing"
+        }
+        **/
       getCookie: function(name) {
         var value = '; ' + document.cookie;
         var parts = value.split('; ' + name + '=');
@@ -499,12 +613,12 @@
           
           if(sha512_cno !== zero_value && sha512_cno.length === 128) {
             if (utils.getCookie('gaUserCNO') !== sha512_cno) {
-              utils.setCookie('gaUserCNO', sha512_cno, 30);
               window.dataLayer4 = window.dataLayer4 || [];
               window.dataLayer4.push({
                 event: 'user_info_setCookie',
                 user_id: sha512_cno,
               });
+              utils.setCookie('gaUserCNO', sha512_cno, 30);
             }
             window.dataLayer4 = window.dataLayer4 || [];
             window.dataLayer4.push({
@@ -578,7 +692,9 @@
       getTimeStamp_v3: utils.getTimeStamp_v3,
       hashSha512_v3: utils.hashSha512_v3,
       setCookie: utils.setCookie,
-      getCookie: utils.getCookie
+      getCookie: utils.getCookie,
+      getDataGtmPage: utils.getDataGtmPage,
+      mappinggDataGtmPage: utils.mappinggDataGtmPage
     };
   })();
 </script>
