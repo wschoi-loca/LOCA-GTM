@@ -232,6 +232,20 @@
         return copy;
       },
       
+      // dataLayer 초기화 함수
+      resetDataLayer: function (object) {
+        try {
+           var setGTM = {};
+            for (key in object) {
+            setGTM[key] = undefined;
+            }
+            return window.dataLayer4.push(setGTM);
+        } catch (e) {
+          console.log('resetDataLayer 함수 ERROR');
+          console.log(e.message);
+        }
+      }.bind(utils),
+      
       // GAHybrid 데이터 전송 함수
       sendGAHybrid_v3: function (object) {
         try {
@@ -332,6 +346,7 @@
             console.log("::WEB OBJECT EVENT::")
             console.log(webData)
             window.dataLayer4.push(webData);
+            utils.resetDataLayer(webData);
           }
         } catch (e) {
           console.log('sendGAEvent 함수 ERROR');
@@ -373,6 +388,7 @@
             console.log("::WEB OBJECT E-commerce::")
             console.log(webData)
             window.dataLayer4.push(webData);
+            utils.resetDataLayer(webData);
           }
         } catch (e) {
           console.log('sendGAEcommerce 함수 ERROR');
@@ -736,6 +752,7 @@
     } 
 
     window._gtmutils = {
+      resetDataLayer: utils.resetDataLayer,
       sendGAHybrid_v3: utils.sendGAHybrid_v3,
       getGtmBodyData_v3: utils.getGtmBodyData_v3,
       removeEmptyElement_v3: utils.removeEmptyElement_v3,
