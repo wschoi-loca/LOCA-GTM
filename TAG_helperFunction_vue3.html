@@ -23,6 +23,31 @@
 
     // 앱으로 데이터 전달 함수
     var utils = {
+      replaceCharacters: function (obj) {
+        var replacements = {
+        '\n': ' ',   // '\n'을 ' '로 대체
+        '<br>': ' ', // '<br>'을 ' '로 대체
+        };
+
+        // 객체의 키-값 쌍을 순회하면서 문자열 값의 경우 대체 작업 수행
+        Object.keys(obj).forEach(function(key) {
+            if (typeof obj[key] === 'string') {
+                var value = obj[key];
+
+                // replacements 딕셔너리 내의 각 대체 규칙을 적용
+                Object.keys(replacements).forEach(function(targetChar) {
+                    var replaceChar = replacements[targetChar];
+                    var regex = new RegExp(targetChar.replace(/\\/g, '\\'), 'g');
+                    value = value.replace(regex, replaceChar);
+                });
+
+                obj[key] = value;
+            }
+        });
+
+        return obj;
+      },
+
       mappinggDataGtmPage : function (pageParams) {
         var result = {
           ep_new_tag: 'Y', // Always include this field
@@ -518,7 +543,10 @@
         }
         eventParams = utils.deepCopy(eventParams, sectionParams, pageParams);  // Non-eCommerce events
       }
-      // Here you handle and map the final data
+      
+      utils.replaceCharacters(sectionParams);
+      utils.replaceCharacters(eventParams);
+
       window._gtmutils.mappingData_v3({
         eventType: eventType,
         screen_name: pageParams.ep_cd77_cur_page_title || 'Unknown Page Title',
@@ -769,7 +797,8 @@
       setCookie: utils.setCookie,
       getCookie: utils.getCookie,
       getDataGtmPage: utils.getDataGtmPage,
-      mappinggDataGtmPage: utils.mappinggDataGtmPage
+      mappinggDataGtmPage: utils.mappinggDataGtmPage,
+      replaceCharacters: utils.replaceCharacters,
     };
   })();
 </script>
