@@ -25,7 +25,8 @@
     var utils = {
       replaceCharacters: function (obj) {
         var replacements = {
-        '\n': ' ',   // '\n'을 ' '로 대체
+        '\\\\n': '',   // '\\n'을 ''로 대체
+        '\\n': ' ',   // '\n'을 ' '로 대체
         '<br>': ' ', // '<br>'을 ' '로 대체
         };
 
@@ -544,17 +545,14 @@
         eventParams = utils.deepCopy(eventParams, sectionParams, pageParams);  // Non-eCommerce events
       }
       
-      utils.replaceCharacters(sectionParams);
-      utils.replaceCharacters(eventParams);
-
       window._gtmutils.mappingData_v3({
         eventType: eventType,
         screen_name: pageParams.ep_cd77_cur_page_title || 'Unknown Page Title',
         location: pageParams.ep_cd123_cur_page_fullurl || window.location.href,
         userProperties: userProperties,
         pageParams: pageParams,
-        sectionParams: sectionParams,
-        eventParams: eventParams,
+        sectionParams: utils.replaceCharacters(sectionParams),
+        eventParams: utils.replaceCharacters(eventParams),
         eCommerceParams: isEcommerceEvent ? eCommerceParams : {}
       });
     } catch (e) {
