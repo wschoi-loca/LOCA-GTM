@@ -23,6 +23,46 @@
 
     // 앱으로 데이터 전달 함수
     var utils = {
+      pathTitle: function(pathname) {
+        // 앞뒤의 '/' 제거
+        if (pathname.startsWith('/')) {
+          pathname = pathname.slice(1);
+        }
+        if (pathname.endsWith('/')) {
+          pathname = pathname.slice(0, -1);
+        }
+
+        // '/'을 '>'로 변환
+        return pathname.replace(/\//g, '>');
+      },
+      parsePathname: function(pathname) {
+      // 앞뒤의 '/' 제거
+      if (pathname.startsWith('/')) {
+        pathname = pathname.slice(1);
+      }
+      if (pathname.endsWith('/')) {
+        pathname = pathname.slice(0, -1);
+      }
+
+      // '/' 기준으로 분리
+      var parts = pathname.split('/');
+
+      // 각 depth에 따라 값 할당
+      var depths = {
+        '1depth': parts[0] || '',
+        '2depth': parts[1] || '',
+        '3depth': parts[2] || '',
+        '4depth': parts[3] || '',
+        '5depth': ''
+      }
+
+       // 5depth에 남은 부분을 '>'로 연결하여 할당
+       if (parts.length > 4) {
+        depths['5depth'] = parts.slice(4).join('>').replace(/\//g, '>');
+       }
+
+       return depths;
+     },
       replaceCharacters: function (obj) {
         var replacements = {
         '\\\\n': '',   // '\\n'을 ''로 대체
@@ -797,6 +837,8 @@
       getDataGtmPage: utils.getDataGtmPage,
       mappinggDataGtmPage: utils.mappinggDataGtmPage,
       replaceCharacters: utils.replaceCharacters,
+      pathTitle: utils.pathTitle,
+      parsePathname: utils.parsePathname,
     };
   })();
 </script>

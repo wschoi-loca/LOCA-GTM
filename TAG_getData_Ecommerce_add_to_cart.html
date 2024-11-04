@@ -19,14 +19,14 @@
           ep_cd56_cms_cno: {{VAR_pageData_cmscno}},
           ep_cd123_cur_page_fullurl: {{VAR_fullURL_decoded}},
         }; 
-        return window._gtmutils.handleEvent_v3(element, 'select-item',pageParams);
+        return window._gtmutils.handleEvent_v3(element, 'add-to-cart',pageParams);
 
       } catch (error) {
         dataLayer4.push({
-          event: 'error_callHandleEvent_select-item',
+          event: 'error_callHandleEvent_add-to-cart',
           error_message: 'handleEvent: ' + error.message,
           page_path: window.location.pathname,
-          event_type: 'select-item'
+          event_type: 'add-to-cart'
         });
       }
     })({{Click Element}});

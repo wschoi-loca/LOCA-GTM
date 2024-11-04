@@ -2,19 +2,64 @@
   (function() {
     var startTime = Date.now();
     var timestamp = window._gtmutils.getTimeStamp_v3();
+    function pathTitle(pathname) {
+      // 앞뒤의 '/' 제거
+      if (pathname.startsWith('/')) {
+        pathname = pathname.slice(1);
+      }
+      if (pathname.endsWith('/')) {
+        pathname = pathname.slice(0, -1);
+      }
+
+      // '/'을 '>'로 변환
+      return pathname.replace(/\//g, '>');
+    }
+    
+    function parsePathname(pathname) {
+      // 앞뒤의 '/' 제거
+      if (pathname.startsWith('/')) {
+        pathname = pathname.slice(1);
+      }
+      if (pathname.endsWith('/')) {
+        pathname = pathname.slice(0, -1);
+      }
+
+      // '/' 기준으로 분리
+      var parts = pathname.split('/');
+
+      // 각 depth에 따라 값 할당
+      var depths = {
+        '1depth': parts[0] || '',
+        '2depth': parts[1] || '',
+        '3depth': parts[2] || '',
+        '4depth': parts[3] || '',
+        '5depth': ''
+      };
+
+       // 5depth에 남은 부분을 '>'로 연결하여 할당
+       if (parts.length > 4) {
+        depths['5depth'] = parts.slice(4).join('>').replace(/\//g, '>');
+       }
+
+       return depths;
+     }
+
+    var pathTitle = pathTitle(document.location.pathname);
+    var depths = parsePathname(document.location.pathname);
+    
     var checkGtmUserInterval = setInterval(function() {
       try {
         if (window._gtm && window._gtm.user || Date.now() - startTime > 1000) {
           // eventParams 객체 정의     
           var eventParams = {
-            ep_cd77_cur_page_title: {{VAR_JS_depthAll}},
+            ep_cd77_cur_page_title: pathTitle,
             ep_cd78_cur_page_url: {{Page Path}}, // 페이지 Path
             ep_new_tag: 'Y',
-            ep_cd15_page_depth1: {{VAR_JS_1depth}},
-            ep_cd16_page_depth2: {{VAR_JS_2depth}},
-            ep_cd52_page_depth3: {{VAR_JS_3depth}},
-            ep_page_depth4: {{VAR_JS_4depth}},
-            ep_page_depth5: {{VAR_JS_5depth}},
+            ep_cd15_page_depth1: depths['1depth'],
+            ep_cd16_page_depth2: depths['2depth'],
+            ep_cd52_page_depth3: depths['3depth'],
+            ep_page_depth4: depths['4depth'],
+            ep_page_depth5: depths['5depth'],
             ep_cd11_native_yn: 'SPA',
             ep_cd43_act_id: {{VAR_pageData_act_id}},
             ep_cd44_ex_act_id: {{VAR_pageData_ex_act_id}},
@@ -90,7 +135,7 @@
 
           // pageData를 Object.assign으로 병합
           var pageData = Object.assign({}, {
-            screen_name: {{VAR_JS_depthAll}}, 
+            screen_name: pathTitle, 
             location: {{VAR_fullURL_decoded}}, 
             event_name: 'screen_view'
           }, { eventParams: window._gtmutils.removeEmptyElement_v3(eventParams) },
