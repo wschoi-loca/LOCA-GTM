@@ -651,9 +651,8 @@
         }
         var eventTypeMapped = eventType === 'visibility' ? 'view' : eventType;
           event_name = isPopup + '_' + eventTypeMapped;
-        if (Object.keys(eCommerceParams).length > 0) {
-          event_name = eventType.replaceAll('-', '_');
-        }
+          event_name = event_name.replaceAll('-', '_');
+
 
         var ep_category;
         if (Object.keys(eCommerceParams).length > 0) {
