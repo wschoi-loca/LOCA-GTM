@@ -650,7 +650,10 @@
           isPopup = 'popup';
         }
         var eventTypeMapped = eventType === 'visibility' ? 'view' : eventType;
-          event_name = isPopup + '_' + eventTypeMapped;
+        var isEcommerceEvent = ['view-item-list', 'select-item', 'view-item', 'add-to-cart', 'begin-checkout', 'purchase', 'refund', 'etc'].includes(eventType);
+        if (isEcommerceEvent){
+          event_name = eventTypeMapped;
+        }  else { event_name = isPopup + '_' + eventTypeMapped; }
           event_name = event_name.replaceAll('-', '_');
 
 
