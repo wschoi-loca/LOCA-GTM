@@ -412,7 +412,6 @@
             console.log("::WEB OBJECT EVENT::")
             console.log(webData)
             window.dataLayer4.push(webData);
-            utils.resetDataLayer(webData);
           }
         } catch (e) {
           console.log('sendGAEvent 함수 ERROR');
@@ -454,7 +453,6 @@
             console.log("::WEB OBJECT E-commerce::")
             console.log(webData)
             window.dataLayer4.push(webData);
-            utils.resetDataLayer(webData);
           }
         } catch (e) {
           console.log('sendGAEcommerce 함수 ERROR');
