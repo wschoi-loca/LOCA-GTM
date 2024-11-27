@@ -468,12 +468,12 @@
           if (!element) return null;
 
           var data = {};
-          var isEcommerceEvent = ['view-item-list', 'select-item', 'view-item', 'add-to-cart', 'begin-checkout', 'purchase', 'refund', 'etc'].includes(eventType);
+          var isEcommerceEvent = ['view-item-list', 'select-item', 'view-item', 'add-to-cart', 'begin-checkout', 'purchase', 'refund', 'etc', 'select-item2'].includes(eventType);
 
           // Check if the event is an eCommerce event
           if (isEcommerceEvent) {
-            if (eventType !== 'etc') {
-              // If it is an eCommerce event but not 'etc'
+            if (eventType !== 'etc' || eventType !== 'select-item2') {
+              // If it is an eCommerce event and not 'etc' or 'select-item2'
               if (element.dataset.gtmEcommerce) {
                 data = JSON.parse(element.dataset.gtmEcommerce);
               }
@@ -559,14 +559,14 @@
 
       var eventParams = {};  // 새로운 eventParams 객체
 
-      var isEcommerceEvent = ['view-item-list', 'select-item', 'view-item', 'add-to-cart', 'begin-checkout', 'purchase', 'refund', 'etc'].includes(eventType);
+      var isEcommerceEvent = ['view-item-list', 'select-item', 'view-item', 'add-to-cart', 'begin-checkout', 'purchase', 'refund', 'etc', 'select-item2'].includes(eventType);
       var eCommerceParams = {};  // 새로운 eCommerceParams 객체
 
       if (isEcommerceEvent) {
         var eCommerceElement = element.closest('[data-gtm-' + eventType + ']');
         if (eCommerceElement) {
           eCommerceParams = window._gtmutils.getGtmBodyData_v3(eCommerceElement, eventType);
-          if (eventType === 'etc') {
+          if (eventType === 'etc' || eventType === 'select-item2') {
             var bodyElement = element.closest('[data-gtm-body]');
             if (bodyElement) {
               var eventParams = window._gtmutils.getGtmBodyData_v3(bodyElement);
@@ -648,7 +648,7 @@
           isPopup = 'popup';
         }
         var eventTypeMapped = eventType === 'visibility' ? 'view' : eventType;
-        var isEcommerceEvent = ['view-item-list', 'select-item', 'view-item', 'add-to-cart', 'begin-checkout', 'purchase', 'refund', 'etc'].includes(eventType);
+        var isEcommerceEvent = ['view-item-list', 'select-item', 'view-item', 'add-to-cart', 'begin-checkout', 'purchase', 'refund', 'etc', 'select-item2'].includes(eventType);
         if (isEcommerceEvent){
           event_name = eventTypeMapped;
         }  else { event_name = isPopup + '_' + eventTypeMapped; }
@@ -665,7 +665,7 @@
 
         var ep_action = eventType.includes('visibility') ? '노출' : '클릭';
         if (Object.keys(eCommerceParams).length > 0) {
-          var eCommerceClicks = ['select_item', 'add_to_cart', 'etc'];
+          var eCommerceClicks = ['select_item', 'add_to_cart', 'etc', 'select-item2'];
           ep_action = eCommerceClicks.includes(event_name) ? '클릭' : '노출';
         }
         
