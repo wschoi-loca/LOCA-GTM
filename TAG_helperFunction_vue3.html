@@ -472,7 +472,7 @@
 
           // Check if the event is an eCommerce event
           if (isEcommerceEvent) {
-            if (eventType !== 'etc' || eventType !== 'select-item2') {
+            if (eventType !== 'etc' && eventType !== 'select-item2') {
               // If it is an eCommerce event and not 'etc' or 'select-item2'
               if (element.dataset.gtmEcommerce) {
                 data = JSON.parse(element.dataset.gtmEcommerce);
