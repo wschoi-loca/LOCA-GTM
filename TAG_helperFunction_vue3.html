@@ -257,7 +257,11 @@
       channelMapping : function (url) {
         var urlMapping = {
           "www.lottecard.co.kr": "PC_WEB",
+          "corp2.lottecard.co.kr": "PC",
+          "corp.lottecard.co.kr": "PC",
           "dwww.lottecard.co.kr": "PC_TEST",
+          "dcorp2.lottecard.co.kr": "PC_TEST",
+          "dcorp.lottecard.co.kr": "PC_TEST",
           "dwww2.lottecard.co.kr": "PC_TEST",
           "m.lottecard.co.kr": "MO_WEB",
           "dmo2.lottecard.co.kr": "MO_TEST",
@@ -268,6 +272,9 @@
           "thing.lottecard.co.kr": "APP",
           "locashop.lottecard.co.kr": "APP",
           "moweb3.lottecard.co.kr": "APP",
+          "mc2.lottecard.co.kr":  "APP",
+          "mc.lottecard.co.kr":  "APP",
+          "mcapp.lottecard.co.kr":  "APP",
           "dmoweb2.lottecard.co.kr": "APP_TEST",
           "dmbt.lottecard.co.kr": "APP_TEST",
           "m-thing-dev.lottecard.co.kr": "APP_TEST",
@@ -278,6 +285,9 @@
           "cmweb2.lottecard.co.kr": "APP_TEST",
           "cmweb3.lottecard.co.kr": "APP_TEST",
           "clocashop.lottecard.co.kr": "APP_TEST",
+          "dmc2.lottecard.co.kr":  "APP_TEST",
+          "dmc.lottecard.co.kr":  "APP_TEST",
+          "dmcapp.lottecard.co.kr":  "APP_TEST",
         };
   
         return urlMapping[url] || "APP_undefinedChannel";
@@ -665,7 +675,7 @@
 
         var ep_action = eventType.includes('visibility') ? '노출' : '클릭';
         if (Object.keys(eCommerceParams).length > 0) {
-          var eCommerceClicks = ['select_item', 'add_to_cart', 'etc', 'select-item2'];
+          var eCommerceClicks = ['select_item', 'add_to_cart', 'etc', 'select_item2'];
           ep_action = eCommerceClicks.includes(event_name) ? '클릭' : '노출';
         }
         
