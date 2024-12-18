@@ -49,7 +49,7 @@
     
     var checkGtmUserInterval = setInterval(function() {
       try {
-        if (window._gtm && window._gtm.user || Date.now() - startTime > 1000) {
+        if (window._gtm && window._gtm.user || window._gtmutils || window._gtmutils.hashSha512_v3 || Date.now() - startTime > 2000) {
           // Stop the interval once window._gtm.user exists
           clearInterval(checkGtmUserInterval);
           // eventParams 객체 정의     
@@ -62,7 +62,7 @@
             ep_cd52_page_depth3: depths['3depth'],
             ep_page_depth4: depths['4depth'],
             ep_page_depth5: depths['5depth'],
-            ep_cd11_native_yn: 'SPA',
+            ep_cd11_native_yn: '{{VAR_page_frame}}',
             ep_cd43_act_id: {{VAR_pageData_act_id}},
             ep_cd44_ex_act_id: {{VAR_pageData_ex_act_id}},
             ep_cd45_ex_act_rpl_id: {{VAR_pageData_ex_act_rpl_id}},
@@ -146,15 +146,24 @@
           window._gtmutils.sendGAPage_v3(pageData);
 
 
-        }
-      } catch (error) {
-        dataLayer4.push({
-          event: 'error_callHandleEvent_pageview2',
-          event_name: 'error_callHandleEvent_pageview2',
+        } else {
+          dataLayer4.push({
+          event: 'error_corp_pageview_userUndefined',
+          event_name: 'error_corp_pageview_userUndefined',
           error_message: 'handleEvent: ' + error.message,
           error_stack: error.stack,
           page_path: window.location.pathname,
-          event_type: 'page2'
+          event_type: 'error_corp_pageview_userUndefined'
+        });
+        }
+      } catch (error) {
+        dataLayer4.push({
+          event: 'error_corp_pageview',
+          event_name: 'error_corp_pageview',
+          error_message: 'handleEvent: ' + error.message,
+          error_stack: error.stack,
+          page_path: window.location.pathname,
+          event_type: 'error_corp_pageview'
         });
       }
     }, 100); // 0.1 seconds interval
