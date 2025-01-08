@@ -1,7 +1,7 @@
 <script>
   (function() {
     var startTime = Date.now();
-    var timestamp = window._gtmutils.getTimeStamp_v3();
+
     function pathTitle(pathname) {
       // 앞뒤의 '/' 제거
       if (pathname.startsWith('/')) {
@@ -49,7 +49,7 @@
     
     var checkGtmUserInterval = setInterval(function() {
       try {
-        if (window._gtm && window._gtm.user || window._gtmutils || window._gtmutils.hashSha512_v3 || Date.now() - startTime > 2000) {
+        if (window._gtm && window._gtm.user || window._gtmutils || window._gtmutils.hashSha512_v3 || Date.now() - startTime > 1400) {
           // Stop the interval once window._gtm.user exists
           clearInterval(checkGtmUserInterval);
           // eventParams 객체 정의     
@@ -100,7 +100,7 @@
           eventParams.ep_cd4_lgn_yn = window._gtm && window._gtm.user && window._gtm.isLogin ? "1" : "U";
           eventParams.ep_cd5_lgn_type = window._gtm && window._gtm.user && window._gtm.user.lgnType ? window._gtm.user.lgnType : undefined;     
           eventParams.ep_cd122_lgn_dtti = window._gtm && window._gtm.user && window._gtm.user.lgnDtti ? window._gtm.user.lgnDtti : undefined;
-          eventParams.ep_cd49_timestamp = timestamp;
+          eventParams.ep_cd49_timestamp = window._gtmutils.getTimeStamp_v3();
   
           if(sha512_cno !== zero_value && sha512_cno.length === 128) {
             if (window._gtmutils.getCookie('gaUserCNO') !== sha512_cno) {
@@ -125,7 +125,7 @@
               ep_cd4_lgn_yn : window._gtm && window._gtm.user && window._gtm.isLogin ? "1" : "U",
               ep_cd5_lgn_type : window._gtm && window._gtm.user && window._gtm.user.lgnType ? window._gtm.user.lgnType : undefined,
               ep_cd122_lgn_dtti : window._gtm && window._gtm.user && window._gtm.user.lgnDtti ? window._gtm.user.lgnDtti : undefined,
-              ep_cd49_timestamp : eventParams.ep_cd49_timestamp
+              ep_cd49_timestamp : window._gtmutils.getTimeStamp_v3();
             });
           }
 

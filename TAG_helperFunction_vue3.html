@@ -519,8 +519,8 @@
   function handleEvent_v3(element, eventType, pageParams) {
     try {
       var userProperties = {};
-      if (window._gtm) {
-        var zero_value = ''
+      if (window._gtm || window._gtm_v2) {
+        var zero_value = '0'.repeat(128);
         var custom_sha512_cno = window._gtm && window._gtm.user && window._gtm.user.cno ? window._gtmutils.hashSha512_v3(window._gtm.user.cno): '';
         var memberType = window._gtm && window._gtm.user && window._gtm.user.mbrType 
                                             ? (window._gtm.user.mbrType === "MBR" 
@@ -531,6 +531,16 @@
                                             : "U";
 
 
+        if(window._gtm_v2) {
+          var custom_sha512_cno_v2 = window._gtm_v2 && window._gtm_v2.user && window._gtm_v2.user.cno ? window._gtmutils.hashSha512_v3(window._gtm_v2.user.cno): '';
+          var memberType = window._gtm_v2.user && window._gtm_v2.user.mbrType 
+                ? (window._gtm_v2.user.mbrType === "MBR" 
+                    ? "정회원" 
+                    : (window._gtm_v2.user.mbrType === "JUN" 
+                        ? "준회원" 
+                        : "U"))
+                : "U";
+        }
         // 우선순위에 따라 sha512_cno 설정
         var sha512_cno = window._gtm && window._gtm.user && window._gtm.user.sha512_cno
                 ? window._gtm.user.sha512_cno   // 1. window._gtm.user.sha512_cno
@@ -615,12 +625,19 @@
         { source: 'label1', target: 'ep_category_depth1' },
         { source: 'label2', target: 'ep_category_depth2' },
         { source: 'label3', target: 'ep_category_depth3' },
+        { source: 'label4', target: 'ep_category_depth4' },
+        { source: 'label5', target: 'ep_category_depth5' },
         { source: 'index', target: 'ep_vertical_index' }
       ]);
 
       
       utils.assignIfExists_v3(eventParams, data.eventParams, [
         { source: 'label', target: 'ep_label_text' },
+        { source: 'label1', target: 'ep_category_depth1' },
+        { source: 'label2', target: 'ep_category_depth2' },
+        { source: 'label3', target: 'ep_category_depth3' },
+        { source: 'label4', target: 'ep_category_depth4' },
+        { source: 'label5', target: 'ep_category_depth5' },
         { source: 'search_keyword', target: 'ep_cd25_srch_keyword' },
         { source: 'search_type', target: 'ep_srch_keyword_type' },
         { source: 'search_result', target: 'ep_cd26_srch_result' },
@@ -684,10 +701,12 @@
             : 'id:' + id + '_sid:' + sid + '_or1:' + or1 + '_or2:' + or2 + '_de:' + de + '_clk:' + clk;
         }
 
-        if (window._gtm) {
-          var zero_value = ''
+        if (window._gtm || window._gtm_v2) {
+          var zero_value = '0'.repeat(128);
           var custom_sha512_cno = window._gtm && window._gtm.user && window._gtm.user.cno ? window._gtmutils.hashSha512_v3(window._gtm.user.cno): '';
-
+          if(window._gtm_v2) {
+            var custom_sha512_cno_v2 = window._gtm_v2.user && window._gtm_v2.user.cno ? window._gtmutils.hashSha512_v3(window._gtm_v2.user.cno): '';
+          }
           // 우선순위에 따라 sha512_cno 설정
           var sha512_cno = window._gtm && window._gtm.user && window._gtm.user.sha512_cno
                   ? window._gtm.user.sha512_cno   // 1. window._gtm.user.sha512_cno
@@ -701,6 +720,30 @@
                           ? {{VAR_DL_user_id}}
                           : zero_value;               // 5. zero_value
 
+          if(window._gtm_v2) {
+            var memberType = window._gtm_v2.user && window._gtm_v2.user.mbrType 
+                ? (window._gtm_v2.user.mbrType === "MBR" 
+                    ? "정회원" 
+                    : (window._gtm_v2.user.mbrType === "JUN" 
+                        ? "준회원" 
+                        : "U"))
+                : "U";
+            var first100Chars = sha512_cno.substring(0, 100);
+            var remainingChars =  sha512_cno.substring(100);
+            var ga_channel = window._gtmutils.channelMapping({{Page Hostname}}); // 채널 매핑 함수 호출
+
+            var lgnDtti = window._gtm_v2.user && window._gtm_v2.user.lgnDtti ? window._gtm_v2.user.lgnDtti : undefined;
+  
+            eventParams.ep_cd10_channel_type = ga_channel;
+            eventParams.ep_cd54_lgn_session_id1 = first100Chars;
+            eventParams.ep_cd55_lgn_session_id2 = remainingChars + '|' + ga_channel + '|' + lgnDtti;
+            eventParams.ep_cd120_user_id1 = first100Chars
+            eventParams.ep_cd121_user_id2 = remainingChars
+            eventParams.ep_cd4_lgn_yn = window._gtm_v2.isLogin ? "1" : "U";
+            eventParams.ep_cd5_lgn_type = window._gtm_v2.user && window._gtm_v2.user.lgnType ? window._gtm_v2.user.lgnType : undefined;  
+            eventParams.ep_cd122_lgn_dtti = window._gtm_v2.user && window._gtm_v2.user.lgnDtti ? window._gtm_v2.user.lgnDtti : undefined;
+            eventParams.ep_cd49_timestamp = window._gtmutils.getTimeStamp_v3()
+          } else {
             var memberType = window._gtm && window._gtm.user && window._gtm.user.mbrType 
                   ? (window._gtm.user.mbrType === "MBR" 
                       ? "정회원" 
@@ -710,7 +753,7 @@
                   : "U";
             var first100Chars = sha512_cno.substring(0, 100);
             var remainingChars =  sha512_cno.substring(100);
-            var ga_channel = window._gtmutils.channelMapping(document.location.host); // 채널 매핑 함수 호출
+            var ga_channel = window._gtmutils.channelMapping({{Page Hostname}}); // 채널 매핑 함수 호출
 
             var lgnDtti = window._gtm && window._gtm.user && window._gtm.user.lgnDtti ? window._gtm.user.lgnDtti : undefined;
   
@@ -723,7 +766,7 @@
             eventParams.ep_cd5_lgn_type = window._gtm && window._gtm.user && window._gtm.user.lgnType ? window._gtm.user.lgnType : undefined;  
             eventParams.ep_cd122_lgn_dtti = window._gtm && window._gtm.user && window._gtm.user.lgnDtti ? window._gtm.user.lgnDtti : undefined;
             eventParams.ep_cd49_timestamp = window._gtmutils.getTimeStamp_v3()
-          
+          }
           if(sha512_cno !== zero_value && sha512_cno.length === 128) {
             if (utils.getCookie('gaUserCNO') !== sha512_cno) {
               window.dataLayer4 = window.dataLayer4 || [];
@@ -750,10 +793,7 @@
               ep_cd49_timestamp : eventParams.ep_cd49_timestamp
             });
           }
-        } else {
-
-
-        }
+        };
         
        // 새 객체를 만들어서 복사된 값과 추가 속성을 결합
         var eventParams = Object.assign({}, eventParams, sectionParams, pageParams, {
