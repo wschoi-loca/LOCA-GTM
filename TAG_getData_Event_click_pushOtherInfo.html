@@ -1,0 +1,29 @@
+<script>
+        
+        var pathTitle = window._gtmutils.pathTitle(document.location.pathname);
+        var depths = window._gtmutils.parsePathname(document.location.pathname);
+        var cur_page_url_path = document.location.href.replace(/^https?:\/\/[^\/]+/, '');
+        var cur_page_url = window._gtmutils.utf8Decode(cur_page_url_path);
+        var cur_page_fullurl = window._gtmutils.utf8Decode(document.location.href);
+        var url_params = window._gtmutils.urlParamsToObject();
+        var pageParams = {
+            ep_cd77_cur_page_title: pathTitle,
+            ep_cd78_cur_page_url: cur_page_url, // 도메인 제외 full url
+            ep_new_tag: 'Y',
+            ep_cd15_page_depth1: depths['1depth'],
+            ep_cd16_page_depth2: depths['2depth'],
+            ep_cd52_page_depth3: depths['3depth'],
+            ep_page_depth4: depths['4depth'],
+            ep_page_depth5: depths['5depth'],
+            ep_cd11_native_yn: 'SPA',
+            ep_cd43_act_id: url_params.act_id,
+            ep_cd44_ex_act_id: url_params.ex_act_id,
+            ep_cd45_ex_act_rpl_id: url_params.ex_act_rpl_id,
+            ep_cd56_cms_cno: url_params.cms_cno,
+            ep_cd123_cur_page_fullurl: cur_page_fullurl,
+        };
+     
+        window._gtmutils.handleEvent_v3(null, 'click', pageParams);
+
+</script>
+

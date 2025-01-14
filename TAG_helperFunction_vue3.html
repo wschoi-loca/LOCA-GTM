@@ -23,6 +23,35 @@
 
     // 앱으로 데이터 전달 함수
     var utils = {
+      utf8Decode: function (utf8String) {
+        try {
+          // Decode the URL-encoded (percent-encoded) string
+          return decodeURIComponent(utf8String);
+        } catch (e) {
+          console.error('Invalid UTF-8 encoded string', e);
+          return utf8String;
+        }
+      },
+      urlParamsToObject: function (url) {
+        // URL을 파싱
+        var urlObj = new URL(url);
+
+        // 쿼리 파라미터를 가져오기
+        var params = new URLSearchParams(urlObj.search);
+
+        // 객체로 변환
+        var result = {};
+        for (const [key, value] of params) {
+          if (result[key]) {
+            // 같은 키가 여러 개일 경우 배열로 저장
+            result[key] = Array.isArray(result[key]) ? [...result[key], value] : [result[key], value];
+          } else {
+            result[key] = value;
+          }
+        }
+
+        return result;
+      },
       pathTitle: function(pathname) {
         // 앞뒤의 '/' 제거
         if (pathname.startsWith('/')) {
@@ -855,6 +884,8 @@
       replaceCharacters: utils.replaceCharacters,
       pathTitle: utils.pathTitle,
       parsePathname: utils.parsePathname,
+      utf8Decode: utils.utf8Decode,
+      urlParamsToObject: utils.urlParamsToObject
     };
   })();
 </script>
