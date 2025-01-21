@@ -32,25 +32,14 @@
           return utf8String;
         }
       },
-      urlParamsToObject: function (url) {
-        // URL을 파싱
-        var urlObj = new URL(url);
-
-        // 쿼리 파라미터를 가져오기
-        var params = new URLSearchParams(urlObj.search);
-
-        // 객체로 변환
-        var result = {};
-        for (const [key, value] of params) {
-          if (result[key]) {
-            // 같은 키가 여러 개일 경우 배열로 저장
-            result[key] = Array.isArray(result[key]) ? [...result[key], value] : [result[key], value];
-          } else {
-            result[key] = value;
-          }
-        }
-
-        return result;
+      urlParamsToObject: function () {
+        var params = new URL(document.location.href).searchParams;
+        return Array.from(params.entries()).reduce(function (acc, paramPair) {
+          var key = paramPair[0];
+          var value = paramPair[1];
+          acc[key] = value;
+          return acc;
+        }, {});
       },
       pathTitle: function(pathname) {
         // 앞뒤의 '/' 제거
@@ -683,7 +672,20 @@
         { source: 'cts_name', target: 'ep_cd14_cts_nm' },
         { source: 'cts_id', target: 'ep_cd42_cts_id' },
         { source: 'cts_sub_id', target: 'ep_cd79_sub_cts_id' },
-        { source: 'index', target: 'ep_horizontal_index' }
+        { source: 'index', target: 'ep_horizontal_index' },
+        { source: 'cts_group1', target: 'ep_cd101_cts_group1' },
+        { source: 'cts_group2', target: 'ep_cd102_cts_group2' },
+        { source: 'cts_group3', target: 'ep_cd103_cts_group3' },
+        { source: 'cts_group4', target: 'ep_cd104_cts_group4' },
+        { source: 'cts_group5', target: 'ep_cd105_cts_group5' },
+        { source: 'cts_group6', target: 'ep_cd106_cts_group6' },
+        { source: 'cts_group7', target: 'ep_cd107_cts_group7' },
+        { source: 'cts_group8', target: 'ep_cd108_cts_group8' },
+        { source: 'cts_group9', target: 'ep_cd109_cts_group9' },
+        { source: 'cts_group10', target: 'ep_cd110_cts_group10' },
+        { source: 'cts_group11', target: 'ep_cd111_cts_group11' },
+        { source: 'cts_group12', target: 'ep_cd112_cts_group12' },
+        { source: 'cts_group13', target: 'ep_cd113_cts_group13' }
       ]);
 
       if(eventType !== 'screen_view') {
