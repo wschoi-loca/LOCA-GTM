@@ -542,15 +542,15 @@
           pageParams = utils.deepCopy(pageParams);
 
           // 섹션 데이터 가져오기
-          var sectionParams = this.getSectionParams(element);
+          var sectionParams = utils.getSectionParams(element);
 
           // 이벤트 데이터 가져오기
-          var isEcommerceEvent = this.isEcommerceEvent(eventType);
-          var eventParams = this.getEventParams(element, eventType, isEcommerceEvent);
+          var isEcommerceEvent = utils.isEcommerceEvent(eventType);
+          var eventParams = utils.getEventParams(element, eventType, isEcommerceEvent);
 
           // 이커머스 데이터 가져오기 (이커머스 이벤트인 경우만)
           var eCommerceParams = isEcommerceEvent
-            ? this.getEcommerceParams(element, eventType)
+            ? utils.getEcommerceParams(element, eventType)
             : {};
 
           // 데이터 병합
@@ -628,21 +628,21 @@
           var pageParams = data.pageParams || {};
 
           // 매핑 작업
-          this.mapParams(sectionParams, data.sectionParams, this.sectionMappingRules());
-          this.mapParams(eventParams, data.eventParams, this.eventMappingRules());
+          utils.mapParams(sectionParams, data.sectionParams, utils.sectionMappingRules());
+          utils.mapParams(eventParams, data.eventParams, utils.eventMappingRules());
 
           // 주요 데이터 처리
-          var isEcommerceEvent = this.isEcommerceEvent(eventType);
-          var eventName = this.generateEventName(eventType, data, isEcommerceEvent);
-          var category = this.calculateCategory(data, eventParams, sectionParams, pageParams, isEcommerceEvent);
-          var action = this.calculateAction(eventType, eventName, isEcommerceEvent);
-          var label = this.calculateLabel(eventType, eventParams, eCommerceParams, sectionParams);
+          var isEcommerceEvent = utils.isEcommerceEvent(eventType);
+          var eventName = utils.generateEventName(eventType, data, isEcommerceEvent);
+          var category = utils.calculateCategory(data, eventParams, sectionParams, pageParams, isEcommerceEvent);
+          var action = utils.calculateAction(eventType, eventName, isEcommerceEvent);
+          var label = utils.calculateLabel(eventType, eventParams, eCommerceParams, sectionParams);
 
           // 유저 정보 설정
-          var userData = this.getUserData();
+          var userData = utils.getUserData();
 
           // 최종 eventParams 병합
-          var finalEventParams = this.mergeParams([
+          var finalEventParams = utils.mergeParams([
             eventParams,
             sectionParams,
             pageParams,
@@ -650,15 +650,20 @@
               ep_category: category,
               ep_action: action,
               ep_label: label,
-              ep_cd10_channel_type: userData.channel,
-              ep_cd54_lgn_session_id1: userData.first100Chars,
-              ep_cd55_lgn_session_id2: userData.remainingChars,
-              ep_cd4_lgn_yn: userData.isLogin,
-              ep_cd5_lgn_type: userData.loginType,
-              ep_cd122_lgn_dtti: userData.loginDate,
+              ep_cd10_channel_type: userData.ep_cd10_channel_type,
+              ep_cd54_lgn_session_id1: userData.ep_cd54_lgn_session_id1,
+              ep_cd55_lgn_session_id2: userData.ep_cd55_lgn_session_id2,
+              ep_cd4_lgn_yn: userData.ep_cd4_lgn_yn,
+              ep_cd5_lgn_type: userData.ep_cd5_lgn_type,
+              ep_cd122_lgn_dtti: userData.ep_cd122_lgn_dtti,
               ep_cd49_timestamp: utils.getTimeStamp_v3()
             }
           ]);
+
+          var setUserProperties = {
+            user_id: userData.user_id,
+            up_cd58_mbr_group: userData.memberType
+          }
 
           // 최종 데이터 생성
           var gaFinalData = {
@@ -672,7 +677,7 @@
           // 데이터 전송
           if (Object.keys(eCommerceParams).length > 0) {
             var items = eCommerceParams.ecommerce ? eCommerceParams.ecommerce.items : [];
-            var transactions = this.extractTransactions(eCommerceParams);
+            var transactions = utils.extractTransactions(eCommerceParams);
             utils.sendGAEcommerce_v3(gaFinalData, items, transactions);
           } else {
             utils.sendGAEvent_v3(gaFinalData);
@@ -823,18 +828,34 @@
 
       // 헬퍼 함수: 유저 데이터 가져오기
       getUserData: function() {
+
         var zeroValue = Array(128 + 1).join('0'); // '0'.repeat(128) 대체
         var user = window._gtm && window._gtm.user ? window._gtm.user : {};
         var sha512Cno = user.sha512_cno || utils.getCookie('gaUserCNO') || zeroValue;
 
+        var channel = utils.channelMapping(window.location.hostname);
+        var login_dtti = user.lgnDtti || undefined;
+        var session_id2 = sha512Cno.substring(100) + '|' + channel + '|' + login_dtti;
+
+        var sha512Cno_1 = sha512Cno.substring(0, 100);
+        var sha512Cno_2 = sha512Cno.substring(100);
+
+        var memberType = user.mbrType ? (user.mbrType === "MBR" ? "정회원" : "준회원") : undefined;
+        var is_login = user.isLogin ? '1' : 'U';
+        var login_type = user.lgnType;
+
         return {
-          channel: utils.channelMapping(window.location.hostname),
-          first100Chars: sha512Cno.substring(0, 100),
-          remainingChars: sha512Cno.substring(100),
-          isLogin: window._gtm && window._gtm.isLogin ? '1' : 'U',
-          loginType: user.lgnType || undefined,
-          loginDate: user.lgnDtti || undefined
-        };
+          ep_cd10_channel_type: channel,
+          ep_cd122_lgn_dtti: login_dtti,
+          ep_cd54_lgn_session_id1: sha512Cno_1,
+          ep_cd55_lgn_session_id2: session_id2,
+          ep_cd120_user_id1: sha512Cno_1,
+          ep_cd121_user_id2: sha512Cno_2 ,
+          ep_cd4_lgn_yn: is_login,
+          ep_cd5_lgn_type: login_type,
+          memberType: memberType,
+          user_id: sha512Cno,
+        }
       },
 
       // 헬퍼 함수: 데이터 병합
