@@ -534,47 +534,9 @@
     };
 
     // Main function to handle different events
+    // mapping data 로 어트리뷰트 값 전달이 목적
   function handleEvent_v3(element, eventType, pageParams) {
-    try {
-      var userProperties = {};
-      if (window._gtm || window._gtm_v2) {
-        var zero_value = '0'.repeat(128);
-        var custom_sha512_cno = window._gtm && window._gtm.user && window._gtm.user.cno ? window._gtmutils.hashSha512_v3(window._gtm.user.cno): '';
-        var memberType = window._gtm && window._gtm.user && window._gtm.user.mbrType 
-                                            ? (window._gtm.user.mbrType === "MBR" 
-                                                ? "정회원" 
-                                                : (window._gtm.user.mbrType === "JUN" 
-                                                    ? "준회원" 
-                                                    : "U"))
-                                            : "U";
-
-
-        if(window._gtm_v2) {
-          var custom_sha512_cno_v2 = window._gtm_v2 && window._gtm_v2.user && window._gtm_v2.user.cno ? window._gtmutils.hashSha512_v3(window._gtm_v2.user.cno): '';
-          var memberType = window._gtm_v2.user && window._gtm_v2.user.mbrType 
-                ? (window._gtm_v2.user.mbrType === "MBR" 
-                    ? "정회원" 
-                    : (window._gtm_v2.user.mbrType === "JUN" 
-                        ? "준회원" 
-                        : "U"))
-                : "U";
-        }
-        // 우선순위에 따라 sha512_cno 설정
-        var sha512_cno = window._gtm && window._gtm.user && window._gtm.user.sha512_cno
-                ? window._gtm.user.sha512_cno   // 1. window._gtm.user.sha512_cno
-                : custom_sha512_cno             // 2. custom_sha512_cno
-                  ? custom_sha512_cno
-                  : custom_sha512_cno_v2
-                    ? custom_sha512_cno_v2
-                    : utils.getCookie('gaUserCNO')  //3. utils.getCookie('gaUserCNO')
-                      ? utils.getCookie('gaUserCNO') 
-                      : {{VAR_DL_user_id}} && {{VAR_DL_user_id}} !== zero_value // 4. VAR_DL_user_id
-                        ? {{VAR_DL_user_id}}
-                        : zero_value;               // 5. zero_value
-        userProperties.user_id = sha512_cno
-        userProperties.up_cd58_mbr_group = memberType
-      }
-      
+    try {      
       var pageParams = utils.deepCopy(pageParams);  // 새로운 pageParams 객체
 
       if (!element) return;  // If element is missing, exit function early
@@ -615,7 +577,6 @@
         eventType: eventType,
         screen_name: pageParams.ep_cd77_cur_page_title || 'Unknown Page Title',
         location: pageParams.ep_cd123_cur_page_fullurl || window.location.href,
-        userProperties: userProperties,
         pageParams: pageParams,
         sectionParams: utils.replaceCharacters(sectionParams),
         eventParams: utils.replaceCharacters(eventParams),
