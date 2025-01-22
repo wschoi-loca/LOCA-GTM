@@ -1,26 +1,8 @@
 <script>
     (function(element) {
         try {
-            var pathTitle = window._gtmutils.pathTitle(document.location.pathname);
-            var depths = window._gtmutils.parsePathname(document.location.pathname);
-            var pageParams = {
-                ep_cd77_cur_page_title: pathTitle,
-                ep_cd78_cur_page_url: {{VAR_URLpath_decoded}}, // 도메인 제외 full url
-                ep_new_tag: 'Y',
-                ep_cd15_page_depth1: depths['1depth'],
-                ep_cd16_page_depth2: depths['2depth'],
-                ep_cd52_page_depth3: depths['3depth'],
-                ep_page_depth4: depths['4depth'],
-                ep_page_depth5: depths['5depth'],
-                ep_cd11_native_yn: 'SPA',
-                ep_cd43_act_id: {{VAR_pageData_act_id}},
-                ep_cd44_ex_act_id: {{VAR_pageData_ex_act_id}},
-                ep_cd45_ex_act_rpl_id: {{VAR_pageData_ex_act_rpl_id}},
-                ep_cd56_cms_cno: {{VAR_pageData_cmscno}},
-                ep_cd123_cur_page_fullurl: {{VAR_fullURL_decoded}},
-            };   
-        
-            return window._gtmutils.handleEvent_v3(element, 'visibility',pageParams);
+
+            return window._gtmutils.handleEvent_v3(element, 'visibility');
             
       } catch (error) {
         dataLayer4.push({

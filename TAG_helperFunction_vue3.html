@@ -531,41 +531,125 @@
           return null;
         }
       }.bind(utils),
+      // Origin을 제외한 나머지 경로 반환 + UTF-8 디코딩
+      getPathFromHrefDecoded: function(href, origin) {
+        // origin을 href에서 제거
+        var path = href.indexOf(origin) === 0 ? href.substring(origin.length) : href;
+
+        // utf8Decode 처리된 결과 반환 (객체 형태로)
+        return {
+          utf8DecodedHref: utils.utf8Decode(href),
+          utf8DecodedLocationHref: utils.utf8Decode(document.location.href),
+          pathDecoded: utils.utf8Decode(path),
+        };
+      }.bind(utils),
+      determineAppType: function(pathname) {
+        if (!pathname || typeof pathname !== 'string') {
+          console.error("Invalid pathname provided:", pathname);
+          return "UNKNOWN"; // 잘못된 입력 처리
+        }
+
+        // 경로와 반환값 매핑
+        var pathMapping = [
+          { key: '/front', value: 'SPA' },
+          { key: '/spa', value: 'SPA_VUE2' },
+          { key: '/app', value: 'JSP' },
+        ];
+
+        // 매핑된 경로에서 적합한 키를 찾고 값 반환
+        var match = pathMapping.find(function(mapping) {
+          return pathname.startsWith(mapping.key);
+        });
+
+        // 매칭된 결과가 있으면 값 반환, 없으면 "UNKNOWN"
+        return match ? match.value : "UNKNOWN";
+      },
+
+      generatePageParams : function() {
+        // 필요한 데이터를 utils 함수 호출로 추출
+        var pathTitle = utils.pathTitle(document.location.pathname);
+        var depths = utils.parsePathname(document.location.pathname);
+        var urlObj = utils.getPathFromHrefDecoded(document.location.href, document.location.origin);
+        var fullURL = urlObj.utf8DecodedLocationHref;
+        var pathSearchURL = urlObj.pathDecoded;
+        var frame = utils.determineAppType(document.location.pathname);
+        var urlParams = utils.urlParamsToObject();
+
+        // pageParams 객체 생성 및 반환
+        return {
+          ep_cd77_cur_page_title: pathTitle,
+          ep_cd78_cur_page_url: pathSearchURL,
+          ep_new_tag: 'Y',
+          ep_cd15_page_depth1: depths['1depth'],
+          ep_cd16_page_depth2: depths['2depth'],
+          ep_cd52_page_depth3: depths['3depth'],
+          ep_page_depth4: depths['4depth'],
+          ep_page_depth5: depths['5depth'],
+          ep_cd11_native_yn: frame,
+          ep_cd25_srch_keyword: urlParams.word,
+          ep_cd43_act_id: urlParams.act_id,
+          ep_cd44_ex_act_id: urlParams.ex_act_id,
+          ep_cd45_ex_act_rpl_id: urlParams.ex_act_rpl_id,
+          ep_cd56_cms_cno: urlParams.cmscno,
+          ep_cd123_cur_page_fullurl: fullURL,
+        };
+      },
 
       // Main function to handle different events
       // mapping data 로 어트리뷰트 값 전달이 목적
-      handleEvent_v3: function(element, eventType, pageParams) {
+      handleEvent_v3: function(element, eventType, page) {
         try {
-          if (!element) return; // If element is missing, exit function early
 
-          // 복사된 pageParams 생성
-          pageParams = utils.deepCopy(pageParams);
+          // 페이지 데이터 가져오기
+          pageParams = utils.generatePageParams();
 
-          // 섹션 데이터 가져오기
-          var sectionParams = utils.getSectionParams(element);
+          if (element instanceof HTMLElement) { // If element is missing, exit function early
+    
+            // 섹션 데이터 가져오기
+            var sectionParams = utils.getSectionParams(element);
 
-          // 이벤트 데이터 가져오기
-          var isEcommerceEvent = utils.isEcommerceEvent(eventType);
-          var eventParams = utils.getEventParams(element, eventType, isEcommerceEvent);
+            // 이벤트 데이터 가져오기
+            var isEcommerceEvent = utils.isEcommerceEvent(eventType);
+            var eventParams = utils.getEventParams(element, eventType, isEcommerceEvent);
 
-          // 이커머스 데이터 가져오기 (이커머스 이벤트인 경우만)
-          var eCommerceParams = isEcommerceEvent
-            ? utils.getEcommerceParams(element, eventType)
-            : {};
+            // 이커머스 데이터 가져오기 (이커머스 이벤트인 경우만)
+            var eCommerceParams = isEcommerceEvent
+              ? utils.getEcommerceParams(element, eventType)
+              : {};
 
-          // 데이터 병합
-          eventParams = utils.deepCopy(eventParams, sectionParams, pageParams);
+          } else if (typeof element === "object" && element !== null) {
+            // JSON 데이터인 경우 처리
+            var eventType = element.eventType;
+            var sectionParams = element.sectionParams || {};
+            var eventParams = element.eventParams || {};
+            var eCommerceParams = element.eCommerceParams || {};
+            var attributeData = utils.deepCopy({
+                eventType: element.eventType,
+                screen_name: pageParams.ep_cd77_cur_page_title ,
+                location: pageParams.ep_cd123_cur_page_fullurl ,
+                pageParams: pageParams,
+                sectionParams: utils.replaceCharacters(sectionParams),
+                eventParams: utils.replaceCharacters(eventParams),
+                eCommerceParams: eCommerceParams,
+          });
+
+          } else {
+            console.error("Invalid input for 'element'. Must be an HTMLElement or JSON object.");
+            return; // 올바르지 않은 입력은 함수 종료
+          }
+
+          var attributeData = utils.deepCopy({
+                eventType: eventType,
+                screen_name: pageParams.ep_cd77_cur_page_title ,
+                location: pageParams.ep_cd123_cur_page_fullurl ,
+                pageParams: pageParams,
+                sectionParams: utils.replaceCharacters(sectionParams),
+                eventParams: utils.replaceCharacters(eventParams),
+                eCommerceParams: eCommerceParams,
+          });
 
           // 데이터 매핑 호출
-          utils.mappingData_v3({
-            eventType: eventType,
-            screen_name: pageParams.ep_cd77_cur_page_title || 'Unknown Page Title',
-            location: pageParams.ep_cd123_cur_page_fullurl || window.location.href,
-            pageParams: pageParams,
-            sectionParams: utils.replaceCharacters(sectionParams),
-            eventParams: utils.replaceCharacters(eventParams),
-            eCommerceParams: eCommerceParams,
-          });
+          utils.mappingData_v3(attributeData);
         } catch (e) {
           console.error('handleEvent_v3 함수 ERROR:', e.message, e.stack);
         }
