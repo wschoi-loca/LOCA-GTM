@@ -621,7 +621,6 @@
       mappingData_v3: function(data) {
         try {
           var eventType = data.eventType;
-          var userProperties = data.userProperties || {};
           var sectionParams = {};
           var eventParams = {};
           var eCommerceParams = data.eCommerceParams || {};
@@ -671,7 +670,7 @@
             screen_name: data.screen_name,
             location: data.location,
             eventParams: finalEventParams,
-            userProperties: userProperties
+            userProperties: setUserProperties
           };
 
           // 데이터 전송
