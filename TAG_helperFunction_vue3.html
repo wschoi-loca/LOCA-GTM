@@ -533,45 +533,30 @@
       }.bind(utils),
 
       // Main function to handle different events
-        // mapping data 로 어트리뷰트 값 전달이 목적
+      // mapping data 로 어트리뷰트 값 전달이 목적
       handleEvent_v3: function(element, eventType, pageParams) {
-        try {      
-          var pageParams = utils.deepCopy(pageParams);  // 새로운 pageParams 객체
+        try {
+          if (!element) return; // If element is missing, exit function early
 
-          if (!element) return;  // If element is missing, exit function early
+          // 복사된 pageParams 생성
+          pageParams = utils.deepCopy(pageParams);
 
-          var sectionParams = {};  // 새로운 sectionParams 객체
-          var sectionElement = element.closest('[data-gtm-section]');
-          if (sectionElement) {
-            sectionParams = utils.getGtmBodyData_v3(sectionElement) || {};
-          }
+          // 섹션 데이터 가져오기
+          var sectionParams = this.getSectionParams(element);
 
-          var eventParams = {};  // 새로운 eventParams 객체
+          // 이벤트 데이터 가져오기
+          var isEcommerceEvent = this.isEcommerceEvent(eventType);
+          var eventParams = this.getEventParams(element, eventType, isEcommerceEvent);
 
-          var isEcommerceEvent = ['view-item-list', 'select-item', 'view-item', 'add-to-cart', 'begin-checkout', 'purchase', 'refund', 'etc', 'select-item2'].includes(eventType);
-          var eCommerceParams = {};  // 새로운 eCommerceParams 객체
+          // 이커머스 데이터 가져오기 (이커머스 이벤트인 경우만)
+          var eCommerceParams = isEcommerceEvent
+            ? this.getEcommerceParams(element, eventType)
+            : {};
 
-          if (isEcommerceEvent) {
-            var eCommerceElement = element.closest('[data-gtm-' + eventType + ']');
-            if (eCommerceElement) {
-              eCommerceParams = utils.getGtmBodyData_v3(eCommerceElement, eventType);
-              if (eventType === 'etc' || eventType === 'select-item2') {
-                var bodyElement = element.closest('[data-gtm-body]');
-                if (bodyElement) {
-                  var eventParams = utils.getGtmBodyData_v3(bodyElement);
-                }
-              }
-            }
-            // Only add items for eCommerce events
-            eventParams = utils.deepCopy(eventParams, eCommerceParams, sectionParams, pageParams);
-          } else {
-            var eventElement = element.closest('[data-gtm-' + eventType + ']');
-            if (eventElement) {
-              eventParams = utils.getGtmBodyData_v3(eventElement) || {};
-            }
-            eventParams = utils.deepCopy(eventParams, sectionParams, pageParams);  // Non-eCommerce events
-          }
-          
+          // 데이터 병합
+          eventParams = utils.deepCopy(eventParams, sectionParams, pageParams);
+
+          // 데이터 매핑 호출
           utils.mappingData_v3({
             eventType: eventType,
             screen_name: pageParams.ep_cd77_cur_page_title || 'Unknown Page Title',
@@ -579,215 +564,303 @@
             pageParams: pageParams,
             sectionParams: utils.replaceCharacters(sectionParams),
             eventParams: utils.replaceCharacters(eventParams),
-            eCommerceParams: isEcommerceEvent ? eCommerceParams : {}
+            eCommerceParams: eCommerceParams,
           });
         } catch (e) {
-          console.log('handleEvent_v3 함수 ERROR');
-          console.log(e.message);
-          console.log(e.stack);
+          console.error('handleEvent_v3 함수 ERROR:', e.message, e.stack);
         }
+      }.bind(utils),
+
+        // 헬퍼 함수: handleEvent_v3 섹션 데이터 가져오기
+      getSectionParams: function(element) {
+        var sectionElement = element.closest('[data-gtm-section]');
+        return sectionElement ? utils.getGtmBodyData_v3(sectionElement) || {} : {};
       },
+
+      // 헬퍼 함수: handleEvent_v3 이벤트 데이터 가져오기
+      getEventParams: function(element, eventType, isEcommerceEvent) {
+        if (isEcommerceEvent) {
+          var eCommerceElement = element.closest('[data-gtm-' + eventType + ']');
+          if (eCommerceElement) {
+            return utils.getGtmBodyData_v3(eCommerceElement, eventType) || {};
+          }
+        } else {
+          var eventElement = element.closest('[data-gtm-' + eventType + ']');
+          if (eventElement) {
+            return utils.getGtmBodyData_v3(eventElement) || {};
+          }
+        }
+        return {};
+      },
+
+      // 헬퍼 함수: handleEvent_v3 이커머스 이벤트 여부 확인
+      isEcommerceEvent: function(eventType) {
+        var ecommerceEvents = [
+          'view-item-list', 'select-item', 'view-item',
+          'add-to-cart', 'begin-checkout', 'purchase',
+          'refund', 'etc', 'select-item2',
+        ];
+        return ecommerceEvents.includes(eventType);
+      },
+
+      // 헬퍼 함수: handleEvent_v3 이커머스 데이터 가져오기
+      getEcommerceParams: function(element, eventType) {
+        var eCommerceElement = element.closest('[data-gtm-' + eventType + ']');
+        if (!eCommerceElement) return {};
+
+        var eCommerceParams = utils.getGtmBodyData_v3(eCommerceElement, eventType) || {};
+        if (['etc', 'select-item2'].includes(eventType)) {
+          var bodyElement = element.closest('[data-gtm-body]');
+          if (bodyElement) {
+            Object.assign(eCommerceParams, utils.getGtmBodyData_v3(bodyElement));
+          }
+        }
+        return eCommerceParams;
+      },
+
       mappingData_v3: function(data) {
         try {
           var eventType = data.eventType;
           var userProperties = data.userProperties || {};
-          var sectionParams = {}; // 명시적으로 초기화
-          var eventParams = {}; // 명시적으로 초기화
+          var sectionParams = {};
+          var eventParams = {};
           var eCommerceParams = data.eCommerceParams || {};
           var pageParams = data.pageParams || {};
 
-          // sectionParams 및 eventParams 매핑
-          utils.assignIfExists_v3(sectionParams, data.sectionParams, [
-            { source: 'label1', target: 'ep_category_depth1' },
-            { source: 'label2', target: 'ep_category_depth2' },
-            { source: 'label3', target: 'ep_category_depth3' },
-            { source: 'label4', target: 'ep_category_depth4' },
-            { source: 'label5', target: 'ep_category_depth5' },
-            { source: 'index', target: 'ep_vertical_index' },
-            { source: 'cts_group1', target: 'ep_cd101_cts_group1' },
-            { source: 'cts_group2', target: 'ep_cd102_cts_group2' },
-            { source: 'cts_group3', target: 'ep_cd103_cts_group3' },
-            { source: 'cts_group4', target: 'ep_cd104_cts_group4' },
-            { source: 'cts_group5', target: 'ep_cd105_cts_group5' },
-            { source: 'cts_group6', target: 'ep_cd106_cts_group6' },
-            { source: 'cts_group7', target: 'ep_cd107_cts_group7' },
-            { source: 'cts_group8', target: 'ep_cd108_cts_group8' },
-            { source: 'cts_group9', target: 'ep_cd109_cts_group9' },
-            { source: 'cts_group10', target: 'ep_cd110_cts_group10' },
-            { source: 'cts_group11', target: 'ep_cd111_cts_group11' },
-            { source: 'cts_group12', target: 'ep_cd112_cts_group12' },
-            { source: 'cts_group13', target: 'ep_cd113_cts_group13' }
+          // 매핑 작업
+          this.mapParams(sectionParams, data.sectionParams, this.sectionMappingRules());
+          this.mapParams(eventParams, data.eventParams, this.eventMappingRules());
+
+          // 주요 데이터 처리
+          var isEcommerceEvent = this.isEcommerceEvent(eventType);
+          var eventName = this.generateEventName(eventType, data, isEcommerceEvent);
+          var category = this.calculateCategory(data, eventParams, sectionParams, pageParams, isEcommerceEvent);
+          var action = this.calculateAction(eventType, eventName, isEcommerceEvent);
+          var label = this.calculateLabel(eventType, eventParams, eCommerceParams, sectionParams);
+
+          // 유저 정보 설정
+          var userData = this.getUserData();
+
+          // 최종 eventParams 병합
+          var finalEventParams = this.mergeParams([
+            eventParams,
+            sectionParams,
+            pageParams,
+            {
+              ep_category: category,
+              ep_action: action,
+              ep_label: label,
+              ep_cd10_channel_type: userData.channel,
+              ep_cd54_lgn_session_id1: userData.first100Chars,
+              ep_cd55_lgn_session_id2: userData.remainingChars,
+              ep_cd4_lgn_yn: userData.isLogin,
+              ep_cd5_lgn_type: userData.loginType,
+              ep_cd122_lgn_dtti: userData.loginDate,
+              ep_cd49_timestamp: utils.getTimeStamp_v3()
+            }
           ]);
 
-          
-          utils.assignIfExists_v3(eventParams, data.eventParams, [
-            { source: 'label', target: 'ep_label_text' },
-            { source: 'label1', target: 'ep_category_depth1' },
-            { source: 'label2', target: 'ep_category_depth2' },
-            { source: 'label3', target: 'ep_category_depth3' },
-            { source: 'label4', target: 'ep_category_depth4' },
-            { source: 'label5', target: 'ep_category_depth5' },
-            { source: 'search_keyword', target: 'ep_cd25_srch_keyword' },
-            { source: 'search_type', target: 'ep_srch_keyword_type' },
-            { source: 'search_result', target: 'ep_cd26_srch_result' },
-            { source: 'search_result_click', target: 'ep_cd27_srch_res_clk_nm' },
-            { source: 'card_name', target: 'ep_cd12_card_name' },
-            { source: 'card_code', target: 'ep_card_code' },
-            { source: 'card_new_or_exist', target: 'ep_cd64_card_apply_code' },
-            { source: 'card_type', target: 'ep_cd65_card_apply_kind' },
-            { source: 'fin_prod_name', target: 'ep_cd13_fn_pd_nm' },
-            { source: 'fin_amount', target: 'ep_cd17_fn_loan_amt' },
-            { source: 'revol_rate', target: 'ep_cd19_rvo_egm_stt_rt' },
-            { source: 'revol_term', target: 'ep_cd20_rvo_egm_stt_te' },
-            { source: 'prod_funnel_name', target: 'ep_cd48_pd_apply_nm' },
-            { source: 'cts_name', target: 'ep_cd14_cts_nm' },
-            { source: 'cts_id', target: 'ep_cd42_cts_id' },
-            { source: 'cts_sub_id', target: 'ep_cd79_sub_cts_id' },
-            { source: 'index', target: 'ep_horizontal_index' },
-            { source: 'cts_group1', target: 'ep_cd101_cts_group1' },
-            { source: 'cts_group2', target: 'ep_cd102_cts_group2' },
-            { source: 'cts_group3', target: 'ep_cd103_cts_group3' },
-            { source: 'cts_group4', target: 'ep_cd104_cts_group4' },
-            { source: 'cts_group5', target: 'ep_cd105_cts_group5' },
-            { source: 'cts_group6', target: 'ep_cd106_cts_group6' },
-            { source: 'cts_group7', target: 'ep_cd107_cts_group7' },
-            { source: 'cts_group8', target: 'ep_cd108_cts_group8' },
-            { source: 'cts_group9', target: 'ep_cd109_cts_group9' },
-            { source: 'cts_group10', target: 'ep_cd110_cts_group10' },
-            { source: 'cts_group11', target: 'ep_cd111_cts_group11' },
-            { source: 'cts_group12', target: 'ep_cd112_cts_group12' },
-            { source: 'cts_group13', target: 'ep_cd113_cts_group13' }
-          ]);
-
-          if(eventType !== 'screen_view') {
-            
-            var event_name;
-            var isPopup = data.sectionParams.is_popup ? 'popup' : 'cts';
-            if (isPopup === 'cts' && data.eventParams.is_popup) {
-              isPopup = 'popup';
-            }
-            var eventTypeMapped = eventType === 'visibility' ? 'view' : eventType;
-            var isEcommerceEvent = ['view-item-list', 'select-item', 'view-item', 'add-to-cart', 'begin-checkout', 'purchase', 'refund', 'etc', 'select-item2'].includes(eventType);
-            if (isEcommerceEvent){
-              event_name = eventTypeMapped;
-            }  else { event_name = isPopup + '_' + eventTypeMapped; }
-              event_name = event_name.replaceAll('-', '_');
-
-            var ep_category;
-            if (Object.keys(eCommerceParams).length > 0) {
-              ep_category = '띵샵_이커머스';
-            } else {
-              var category = eventParams.ep_cd14_cts_nm || eventParams.ep_label_text || eventParams.ep_category_depth1 || 'n';
-              ep_category = isPopup === 'popup' ? '팝업_' + pageParams.ep_cd15_page_depth1 : '콘텐츠_' + category + '_메인_' + pageParams.ep_cd15_page_depth1;
-            }
-
-            var ep_action = eventType.includes('visibility') ? '노출' : '클릭';
-            if (Object.keys(eCommerceParams).length > 0) {
-              var eCommerceClicks = ['select_item', 'add_to_cart', 'etc', 'select_item2'];
-              ep_action = eCommerceClicks.includes(event_name) ? '클릭' : '노출';
-            }
-            
-            var ep_label
-            if (Object.keys(eCommerceParams).length > 0 && eCommerceParams.ecommerce) {
-              ep_label = eCommerceParams.ecommerce.transaction_id || eCommerceParams.ecommerce.items[0].item_id || eventParams.ep_cd14_cts_nm || eventParams.ep_label_text || eventParams.ep_category_depth1 || 'n';
-            }  else {
-              var id = eventParams.ep_cd42_cts_id || 'n';
-              var sid = eventParams.ep_cd79_sub_cts_id || 'n';
-              var or1 = sectionParams.ep_vertical_index || 'n';
-              var or2 = eventParams.ep_horizontal_index || 'n';
-              var de = eventParams.ep_cd14_cts_nm || eventParams.ep_label_text || 'n';
-              var clk = eventParams.ep_label_text || 'n';
-          
-              ep_label = eventType === 'visibility' 
-                ? 'id:' + id + '_sid:' + sid + '_or1:' + or1 + '_or2:' + or2 + '_de:' + de
-                : 'id:' + id + '_sid:' + sid + '_or1:' + or1 + '_or2:' + or2 + '_de:' + de + '_clk:' + clk;
-            }
-
-            if (window._gtm) {
-              var zero_value = '0'.repeat(128);
-              var custom_sha512_cno = window._gtm && window._gtm.user && window._gtm.user.cno ? utils.hashSha512_v3(window._gtm.user.cno): '';
-              if(window._gtm_v2) {
-                var custom_sha512_cno_v2 = window._gtm_v2.user && window._gtm_v2.user.cno ? utils.hashSha512_v3(window._gtm_v2.user.cno): '';
-              }
-              // 우선순위에 따라 sha512_cno 설정
-              var sha512_cno = window._gtm && window._gtm.user && window._gtm.user.sha512_cno
-                      ? window._gtm.user.sha512_cno   // 1. window._gtm.user.sha512_cno
-                      : custom_sha512_cno             // 2. custom_sha512_cno
-                        ? custom_sha512_cno
-                        : custom_sha512_cno_v2
-                          ? custom_sha512_cno_v2
-                          : utils.getCookie('gaUserCNO')  //3. utils.getCookie('gaUserCNO')
-                            ? utils.getCookie('gaUserCNO') 
-                            : {{VAR_DL_user_id}} && {{VAR_DL_user_id}} !== zero_value // 4. VAR_DL_user_id
-                              ? {{VAR_DL_user_id}}
-                              : zero_value;               // 5. zero_value
-
-                var memberType = window._gtm && window._gtm.user && window._gtm.user.mbrType 
-                      ? (window._gtm.user.mbrType === "MBR" 
-                          ? "정회원" 
-                          : (window._gtm.user.mbrType === "JUN" 
-                              ? "준회원" 
-                              : "U"))
-                      : "U";
-                var first100Chars = sha512_cno.substring(0, 100);
-                var remainingChars =  sha512_cno.substring(100);
-                var ga_channel = utils.channelMapping({{Page Hostname}}); // 채널 매핑 함수 호출
-
-                var lgnDtti = window._gtm && window._gtm.user && window._gtm.user.lgnDtti ? window._gtm.user.lgnDtti : undefined;
-      
-                eventParams.ep_cd10_channel_type = ga_channel;
-                eventParams.ep_cd54_lgn_session_id1 = first100Chars;
-                eventParams.ep_cd55_lgn_session_id2 = remainingChars + '|' + ga_channel + '|' + lgnDtti;
-                eventParams.ep_cd120_user_id1 = first100Chars
-                eventParams.ep_cd121_user_id2 = remainingChars
-                eventParams.ep_cd4_lgn_yn = window._gtm && window._gtm.isLogin ? "1" : "U";
-                eventParams.ep_cd5_lgn_type = window._gtm && window._gtm.user && window._gtm.user.lgnType ? window._gtm.user.lgnType : undefined;  
-                eventParams.ep_cd122_lgn_dtti = window._gtm && window._gtm.user && window._gtm.user.lgnDtti ? window._gtm.user.lgnDtti : undefined;
-                eventParams.ep_cd49_timestamp = utils.getTimeStamp_v3()
-
-              // user id 쿠키 세팅 & 데이터레이어 푸시
-              if(sha512_cno !== zero_value && sha512_cno.length === 128 && utils.getCookie('gaUserCNO') !== sha512_cno) {
-                  utils.setCookie('gaUserCNO', sha512_cno, 30);
-              }
-            };
-            
-          // 새 객체를 만들어서 복사된 값과 추가 속성을 결합
-            var eventParams = Object.assign({}, eventParams, sectionParams, pageParams, {
-              ep_category: ep_category,
-              ep_action: ep_action,
-              ep_label: ep_label
-            });
-          }
-
+          // 최종 데이터 생성
           var gaFinalData = {
-            event_name: event_name.toString(),
+            event_name: eventName,
             screen_name: data.screen_name,
             location: data.location,
-            eventParams: eventParams,
+            eventParams: finalEventParams,
             userProperties: userProperties
           };
 
+          // 데이터 전송
           if (Object.keys(eCommerceParams).length > 0) {
             var items = eCommerceParams.ecommerce ? eCommerceParams.ecommerce.items : [];
-            
-            // transactions 변수에 items를 제외한 나머지 속성만 담기
-            var transactions = Object.keys(eCommerceParams.ecommerce).reduce(function(acc, key) {
-                if (key !== 'items') {
-                    acc[key] = eCommerceParams.ecommerce[key];
-                }
-                return acc;
-            }, {});
-            
+            var transactions = this.extractTransactions(eCommerceParams);
             utils.sendGAEcommerce_v3(gaFinalData, items, transactions);
           } else {
             utils.sendGAEvent_v3(gaFinalData);
           }
-          } catch (e) {
-          console.log('mappingData_v3 함수 ERROR');
-          console.log(e.message);
-          console.log(e.stack);
+        } catch (e) {
+          console.error('mappingData_v3 함수 ERROR:', e.message, e.stack);
+        }
+      }.bind(utils),
+
+      // 헬퍼 함수: 매핑 작업 수행
+      mapParams: function(target, source, mappingRules) {
+        utils.assignIfExists_v3(target, source, mappingRules);
+      },
+
+      // 헬퍼 함수: sectionParams 매핑 규칙
+      sectionMappingRules: function() {
+        return [
+          { source: 'label1', target: 'ep_category_depth1' },
+          { source: 'label2', target: 'ep_category_depth2' },
+          { source: 'label3', target: 'ep_category_depth3' },
+          { source: 'label4', target: 'ep_category_depth4' },
+          { source: 'label5', target: 'ep_category_depth5' },
+          { source: 'index', target: 'ep_vertical_index' },
+          { source: 'cts_group1', target: 'ep_cd101_cts_group1' },
+          { source: 'cts_group2', target: 'ep_cd102_cts_group2' },
+          { source: 'cts_group3', target: 'ep_cd103_cts_group3' },
+          { source: 'cts_group4', target: 'ep_cd104_cts_group4' },
+          { source: 'cts_group5', target: 'ep_cd105_cts_group5' },
+          { source: 'cts_group6', target: 'ep_cd106_cts_group6' },
+          { source: 'cts_group7', target: 'ep_cd107_cts_group7' },
+          { source: 'cts_group8', target: 'ep_cd108_cts_group8' },
+          { source: 'cts_group9', target: 'ep_cd109_cts_group9' },
+          { source: 'cts_group10', target: 'ep_cd110_cts_group10' },
+          { source: 'cts_group11', target: 'ep_cd111_cts_group11' },
+          { source: 'cts_group12', target: 'ep_cd112_cts_group12' },
+          { source: 'cts_group13', target: 'ep_cd113_cts_group13' },
+        ];
+      },
+
+      // 헬퍼 함수: eventParams 매핑 규칙
+      eventMappingRules: function() {
+        return [
+          { source: 'label', target: 'ep_label_text' },
+          { source: 'label1', target: 'ep_category_depth1' },
+          { source: 'label2', target: 'ep_category_depth2' },
+          { source: 'label3', target: 'ep_category_depth3' },
+          { source: 'label4', target: 'ep_category_depth4' },
+          { source: 'label5', target: 'ep_category_depth5' },
+          { source: 'search_keyword', target: 'ep_cd25_srch_keyword' },
+          { source: 'search_type', target: 'ep_srch_keyword_type' },
+          { source: 'search_result', target: 'ep_cd26_srch_result' },
+          { source: 'search_result_click', target: 'ep_cd27_srch_res_clk_nm' },
+          { source: 'card_name', target: 'ep_cd12_card_name' },
+          { source: 'card_code', target: 'ep_card_code' },
+          { source: 'card_new_or_exist', target: 'ep_cd64_card_apply_code' },
+          { source: 'card_type', target: 'ep_cd65_card_apply_kind' },
+          { source: 'fin_prod_name', target: 'ep_cd13_fn_pd_nm' },
+          { source: 'fin_amount', target: 'ep_cd17_fn_loan_amt' },
+          { source: 'revol_rate', target: 'ep_cd19_rvo_egm_stt_rt' },
+          { source: 'revol_term', target: 'ep_cd20_rvo_egm_stt_te' },
+          { source: 'prod_funnel_name', target: 'ep_cd48_pd_apply_nm' },
+          { source: 'cts_name', target: 'ep_cd14_cts_nm' },
+          { source: 'cts_id', target: 'ep_cd42_cts_id' },
+          { source: 'cts_sub_id', target: 'ep_cd79_sub_cts_id' },
+          { source: 'index', target: 'ep_horizontal_index' },
+          { source: 'cts_group1', target: 'ep_cd101_cts_group1' },
+          { source: 'cts_group2', target: 'ep_cd102_cts_group2' },
+          { source: 'cts_group3', target: 'ep_cd103_cts_group3' },
+          { source: 'cts_group4', target: 'ep_cd104_cts_group4' },
+          { source: 'cts_group5', target: 'ep_cd105_cts_group5' },
+          { source: 'cts_group6', target: 'ep_cd106_cts_group6' },
+          { source: 'cts_group7', target: 'ep_cd107_cts_group7' },
+          { source: 'cts_group8', target: 'ep_cd108_cts_group8' },
+          { source: 'cts_group9', target: 'ep_cd109_cts_group9' },
+          { source: 'cts_group10', target: 'ep_cd110_cts_group10' },
+          { source: 'cts_group11', target: 'ep_cd111_cts_group11' },
+          { source: 'cts_group12', target: 'ep_cd112_cts_group12' },
+          { source: 'cts_group13', target: 'ep_cd113_cts_group13' },
+        ];
+      },
+      // 헬퍼 함수: 이커머스 이벤트 여부 확인
+      isEcommerceEvent: function(eventType) {
+        var ecommerceEvents = [
+          'view-item-list', 'select-item', 'view-item',
+          'add-to-cart', 'begin-checkout', 'purchase',
+          'refund', 'etc', 'select-item2',
+        ];
+        return ecommerceEvents.indexOf(eventType) !== -1;
+      },
+
+      // 헬퍼 함수: 이벤트 이름 생성
+      generateEventName: function(eventType, data, isEcommerceEvent) {
+        var isPopup = data.sectionParams && data.sectionParams.is_popup ? 'popup' : 'cts';
+        var baseName = isEcommerceEvent
+          ? eventType
+          : isPopup + '_' + (eventType === 'visibility' ? 'view' : eventType);
+
+        return baseName.replace(/-/g, '_'); // Template Literal 제거
+      },
+
+      // 헬퍼 함수: 카테고리 계산
+      calculateCategory: function(data, eventParams, sectionParams, pageParams, isEcommerceEvent) {
+        if (isEcommerceEvent) {
+          return '띵샵_이커머스';
+        }
+        var isPopup = data.sectionParams && data.sectionParams.is_popup;
+        var category = eventParams.ep_cd14_cts_nm || eventParams.ep_label_text || eventParams.ep_category_depth1 || 'n';
+        return isPopup
+          ? '팝업_' + (pageParams.ep_cd15_page_depth1 || 'n')
+          : '콘텐츠_' + category + '_메인_' + (pageParams.ep_cd15_page_depth1 || 'n');
+      },
+
+      // 헬퍼 함수: 액션 계산
+      calculateAction: function(eventType, eventName, isEcommerceEvent) {
+        if (isEcommerceEvent) {
+          var ecommerceClicks = ['select_item', 'add_to_cart', 'etc', 'select_item2'];
+          return ecommerceClicks.includes(eventName) ? '클릭' : '노출';
+        }
+        return eventType.includes('visibility') ? '노출' : '클릭';
+      },
+
+      // 헬퍼 함수: 라벨 계산
+      calculateLabel: function(eventType, eventParams, eCommerceParams, sectionParams) {
+        if (Object.keys(eCommerceParams).length > 0 && eCommerceParams.ecommerce) {
+          return (
+            eCommerceParams.ecommerce.transaction_id ||
+            (eCommerceParams.ecommerce.items && eCommerceParams.ecommerce.items[0]
+              ? eCommerceParams.ecommerce.items[0].item_id
+              : '') ||
+            eventParams.ep_cd14_cts_nm ||
+            eventParams.ep_label_text ||
+            eventParams.ep_category_depth1 ||
+            'n'
+          );
+        }
+
+        var id = eventParams.ep_cd42_cts_id || 'n';
+        var sid = eventParams.ep_cd79_sub_cts_id || 'n';
+        var or1 = sectionParams.ep_vertical_index || 'n';
+        var or2 = eventParams.ep_horizontal_index || 'n';
+        var de = eventParams.ep_cd14_cts_nm || eventParams.ep_label_text || 'n';
+        var clk = eventParams.ep_label_text || 'n';
+
+        return eventType === 'visibility'
+          ? 'id:' + id + '_sid:' + sid + '_or1:' + or1 + '_or2:' + or2 + '_de:' + de
+          : 'id:' + id + '_sid:' + sid + '_or1:' + or1 + '_or2:' + or2 + '_de:' + de + '_clk:' + clk;
+      },
+
+      // 헬퍼 함수: 유저 데이터 가져오기
+      getUserData: function() {
+        var zeroValue = Array(128 + 1).join('0'); // '0'.repeat(128) 대체
+        var user = window._gtm && window._gtm.user ? window._gtm.user : {};
+        var sha512Cno = user.sha512_cno || utils.getCookie('gaUserCNO') || zeroValue;
+
+        return {
+          channel: utils.channelMapping(window.location.hostname),
+          first100Chars: sha512Cno.substring(0, 100),
+          remainingChars: sha512Cno.substring(100),
+          isLogin: window._gtm && window._gtm.isLogin ? '1' : 'U',
+          loginType: user.lgnType || undefined,
+          loginDate: user.lgnDtti || undefined
+        };
+      },
+
+      // 헬퍼 함수: 데이터 병합
+      mergeParams: function(objects) {
+        var result = {};
+        for (var i = 0; i < objects.length; i++) {
+          var obj = objects[i];
+          for (var key in obj) {
+            if (obj.hasOwnProperty(key)) {
+              result[key] = obj[key];
+            }
           }
-        }, 
+        }
+        return result;
+      },
+      // 헬퍼 함수: 이커머스 트랜잭션 데이터 추출
+      extractTransactions: function(eCommerceParams) {
+        var transactions = {};
+        var ecommerceData = eCommerceParams.ecommerce || {};
+        for (var key in ecommerceData) {
+          if (ecommerceData.hasOwnProperty(key) && key !== 'items') {
+            transactions[key] = ecommerceData[key];
+          }
+        }
+        return transactions;
+      }
     };
 
     window._gtmutils = {
