@@ -1,0 +1,18 @@
+<script>
+    (function(element) {
+        try {
+
+            return window._gtmutils.handleEvent_v3(element, 'visibility');
+            
+      } catch (error) {
+        dataLayer4.push({
+          event: 'error_callHandleEvent_visibility',
+          event_name: 'error_callHandleEvent_visibility',
+          error_message: 'handleEvent: ' + error.message,
+          page_path: window.location.pathname,
+          event_type: 'visibility'
+        });
+      }
+    })({{Click Element}});
+  </script>
+  

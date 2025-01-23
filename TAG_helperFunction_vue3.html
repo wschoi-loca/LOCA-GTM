@@ -533,19 +533,15 @@
 
           var data = {};
           var isEcommerceEvent = ['view-item-list', 'select-item', 'view-item', 'add-to-cart', 'begin-checkout', 'purchase', 'refund', 'etc', 'select-item2'].includes(eventType);
-
+  
           // Check if the event is an eCommerce event
           if (isEcommerceEvent) {
             var ecData;
-            var evData;
             // If it is an eCommerce event and not 'etc' or 'select-item2'
             if (element.dataset.gtmEcommerce) {
               ecData = JSON.parse(element.dataset.gtmEcommerce);
             }
-            if (element.dataset.gtmBody) {
-              evData = JSON.parse(element.dataset.gtmEcommerce);
-            }
-            data = Object.assign({}, ecData, evData);
+            data = Object.assign({}, ecData);
 
           } else if (element.dataset.gtmBody) {
             // Handle non-eCommerce events that have gtmBody data
@@ -648,9 +644,10 @@
 
           // 섹션, 이벤트, 이커머스 데이터 처리
           var processResult = utils.processEventData(element, eventType, isHtmlElement);
-          var sectionParams = processResult.sectionParams;
-          var eventParams = processResult.eventParams;
+          var sectionParams = utils.replaceCharacters(processResult.sectionParams);
+          var eventParams = utils.replaceCharacters(processResult.eventParams);
           var eCommerceParams = processResult.eCommerceParams;
+          console.log('processResult', processResult)
 
           // 어트리뷰트 데이터 생성
           var attributeData = utils.generateAttributeData(
@@ -660,7 +657,13 @@
             eventParams,
             eCommerceParams
           );
-          console.log('attributeData', attributeData)
+          console.log('attributeData', utils.generateAttributeData(
+            eventType,
+            pageParams,
+            sectionParams,
+            eventParams,
+            eCommerceParams
+          ))
           // 데이터 매핑 호출
           utils.mappingData_v3(attributeData, isHtmlElement);
         } catch (e) {
@@ -677,7 +680,7 @@
           // HTML Element 처리
           sectionParams = utils.getSectionParams(element);
           var isEcommerceEvent = utils.isEcommerceEvent(eventType);
-          eventParams = utils.getEventParams(element, eventType, isEcommerceEvent);
+          eventParams = utils.getEventParams(element, eventType);
           if (isEcommerceEvent) {
             eCommerceParams = utils.getEcommerceParams(element, eventType);
           }
@@ -702,8 +705,8 @@
           screen_name: pageParams.ep_cd77_cur_page_title,
           location: pageParams.ep_cd123_cur_page_fullurl,
           pageParams: pageParams,
-          sectionParams: utils.replaceCharacters(sectionParams),
-          eventParams: utils.replaceCharacters(eventParams),
+          sectionParams: sectionParams,
+          eventParams: eventParams,
           eCommerceParams: eCommerceParams,
         });
       }.bind(utils),
@@ -715,18 +718,13 @@
       },
 
       // 헬퍼 함수: handleEvent_v3 이벤트 데이터 가져오기
-      getEventParams: function(element, eventType, isEcommerceEvent) {
-        if (isEcommerceEvent) {
-          var eCommerceElement = element.closest('[data-gtm-' + eventType + ']');
-          if (eCommerceElement) {
-            return utils.getGtmBodyData_v3(eCommerceElement, eventType) || {};
-          }
-        } else {
+      getEventParams: function(element, eventType) {
+
           var eventElement = element.closest('[data-gtm-' + eventType + ']');
           if (eventElement) {
             return utils.getGtmBodyData_v3(eventElement) || {};
           }
-        }
+
         return {};
       },
 
@@ -742,16 +740,24 @@
 
       // 헬퍼 함수: handleEvent_v3 이커머스 데이터 가져오기
       getEcommerceParams: function(element, eventType) {
-        var eCommerceElement = element.closest('[data-gtm-' + eventType + ']');
-        if (!eCommerceElement) return {};
-
-        var eCommerceParams = utils.getGtmBodyData_v3(eCommerceElement, eventType) || {};
-        if (['etc', 'select-item2'].includes(eventType)) {
-          var bodyElement = element.closest('[data-gtm-body]');
-          if (bodyElement) {
-            Object.assign(eCommerceParams, utils.getGtmBodyData_v3(bodyElement));
-          }
+        var isProductEvent = ['etc', 'select-item2'].includes(eventType);
+        if(isProductEvent) {
+          var eCommerceElement = element.closest('[data-gtm-ecommerce]');
+          var eCommerceParams = utils.getGtmBodyData_v3(eCommerceElement, eventType) || {};
         }
+        else {
+          var eCommerceElement = element.closest('[data-gtm-' + eventType + ']');
+          if (!eCommerceElement) return {};
+
+          var eCommerceParams = utils.getGtmBodyData_v3(eCommerceElement, eventType) || {};
+        }
+        /*
+        var bodyElement = element.closest('[data-gtm-body]');
+        if (bodyElement) {
+          Object.assign(eCommerceParams, utils.getGtmBodyData_v3(bodyElement));
+        }
+        */    
+
         return eCommerceParams;
       },
 

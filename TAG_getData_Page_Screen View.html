@@ -7,7 +7,7 @@
       try {
         if (window._gtm && window._gtm.user || Date.now() - startTime > 1000) {
  
-          return window._gtmutils.handleEvent_v3(element, 'screen_view');
+          window._gtmutils.handleEvent_v3({}, 'screen_view', false);
 
           // Stop the interval once window._gtm.user exists
           clearInterval(checkGtmUserInterval);
