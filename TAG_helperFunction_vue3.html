@@ -562,7 +562,7 @@
         });
 
         // 매칭된 결과가 있으면 값 반환, 없으면 "UNKNOWN"
-        return match ? match.value : "UNKNOWN";
+        return match ? match.value : "SPA";
       },
 
       generatePageParams : function() {
@@ -597,62 +597,78 @@
 
       // Main function to handle different events
       // mapping data 로 어트리뷰트 값 전달이 목적
-      handleEvent_v3: function(element, eventType, page) {
+      handleEvent_v3: function(element, eventType, attributeEvent) {
         try {
+          // Default parameter 처리 (ES5 호환)
+          if (typeof attributeEvent === "undefined") {
+            attributeEvent = true;
+          }
+
+
+          // 입력 유효성 검사
+          if (!eventType || (!element && attributeEvent)) {
+            console.error("Invalid input: 'eventType' is required and 'element' must be provided for attribute events.");
+            return;
+          }
 
           // 페이지 데이터 가져오기
-          pageParams = utils.generatePageParams();
+          var pageParams = utils.generatePageParams();
 
-          if (element instanceof HTMLElement) { // If element is missing, exit function early
-    
+          // 섹션, 이벤트, 이커머스 데이터 초기화
+          var sectionParams = {};
+          var eventParams = {};
+          var eCommerceParams = {};
+
+          if (attributeEvent) {
+            console.log("attributeEvent - true");
+
             // 섹션 데이터 가져오기
-            var sectionParams = utils.getSectionParams(element);
+            sectionParams = utils.getSectionParams(element);
 
             // 이벤트 데이터 가져오기
             var isEcommerceEvent = utils.isEcommerceEvent(eventType);
-            var eventParams = utils.getEventParams(element, eventType, isEcommerceEvent);
+            eventParams = utils.getEventParams(element, eventType, isEcommerceEvent);
 
-            // 이커머스 데이터 가져오기 (이커머스 이벤트인 경우만)
-            var eCommerceParams = isEcommerceEvent
-              ? utils.getEcommerceParams(element, eventType)
-              : {};
-
-          } else if (typeof element === "object" && element !== null) {
-            // JSON 데이터인 경우 처리
-            var eventType = element.eventType;
-            var sectionParams = element.sectionParams || {};
-            var eventParams = element.eventParams || {};
-            var eCommerceParams = element.eCommerceParams || {};
-            var attributeData = utils.deepCopy({
-                eventType: element.eventType,
-                screen_name: pageParams.ep_cd77_cur_page_title ,
-                location: pageParams.ep_cd123_cur_page_fullurl ,
-                pageParams: pageParams,
-                sectionParams: utils.replaceCharacters(sectionParams),
-                eventParams: utils.replaceCharacters(eventParams),
-                eCommerceParams: eCommerceParams,
-          });
-
+            // 이커머스 데이터 가져오기
+            if (isEcommerceEvent) {
+              eCommerceParams = utils.getEcommerceParams(element, eventType);
+            }
           } else {
-            console.error("Invalid input for 'element'. Must be an HTMLElement or JSON object.");
-            return; // 올바르지 않은 입력은 함수 종료
+            console.log("attributeEvent - false");
+
+            // JSON 데이터 처리
+            sectionParams = element.sectionParams || {};
+            eventParams = element.eventParams || {};
+            eCommerceParams = element.eCommerceParams || {};
           }
 
-          var attributeData = utils.deepCopy({
-                eventType: eventType,
-                screen_name: pageParams.ep_cd77_cur_page_title ,
-                location: pageParams.ep_cd123_cur_page_fullurl ,
-                pageParams: pageParams,
-                sectionParams: utils.replaceCharacters(sectionParams),
-                eventParams: utils.replaceCharacters(eventParams),
-                eCommerceParams: eCommerceParams,
-          });
+          // 어트리뷰트 데이터 생성
+          var attributeData = utils.generateAttributeData(
+            eventType,
+            pageParams,
+            sectionParams,
+            eventParams,
+            eCommerceParams
+          );
 
           // 데이터 매핑 호출
-          utils.mappingData_v3(attributeData);
+          utils.mappingData_v3(attributeData, attributeEvent);
         } catch (e) {
-          console.error('handleEvent_v3 함수 ERROR:', e.message, e.stack);
+          console.error("handleEvent_v3 함수 ERROR:", e.message, e.stack);
         }
+      }.bind(utils),
+
+     // 헬퍼 함수: 어트리뷰트 데이터 생성
+      generateAttributeData: function (eventType, pageParams, sectionParams, eventParams, eCommerceParams) {
+        return utils.deepCopy({
+          eventType: eventType,
+          screen_name: pageParams.ep_cd77_cur_page_title,
+          location: pageParams.ep_cd123_cur_page_fullurl,
+          pageParams: pageParams,
+          sectionParams: utils.replaceCharacters(sectionParams),
+          eventParams: utils.replaceCharacters(eventParams),
+          eCommerceParams: eCommerceParams,
+        });
       }.bind(utils),
 
         // 헬퍼 함수: handleEvent_v3 섹션 데이터 가져오기
@@ -702,7 +718,7 @@
         return eCommerceParams;
       },
 
-      mappingData_v3: function(data) {
+      mappingData_v3: function(data, attributeEvent) {
         try {
           var eventType = data.eventType;
           var sectionParams = {};
@@ -713,14 +729,19 @@
           // 매핑 작업
           utils.mapParams(sectionParams, data.sectionParams, utils.sectionMappingRules());
           utils.mapParams(eventParams, data.eventParams, utils.eventMappingRules());
-
-          // 주요 데이터 처리
-          var isEcommerceEvent = utils.isEcommerceEvent(eventType);
-          var eventName = utils.generateEventName(eventType, data, isEcommerceEvent);
-          var category = utils.calculateCategory(data, eventParams, sectionParams, pageParams, isEcommerceEvent);
-          var action = utils.calculateAction(eventType, eventName, isEcommerceEvent);
-          var label = utils.calculateLabel(eventType, eventParams, eCommerceParams, sectionParams);
-
+          if (attributeEvent === false) {
+            // 값 변환 처리
+            var eventName = eventType;
+            var category = data.category?data.category:'';
+            var action = data.action?data.action:'';
+            var label = data.label?data.label:'';
+          } else {
+            var isEcommerceEvent = utils.isEcommerceEvent(eventType);
+            var eventName = utils.generateEventName(eventType, data, isEcommerceEvent);
+            var category = utils.calculateCategory(data, eventParams, sectionParams, pageParams, isEcommerceEvent);
+            var action = utils.calculateAction(eventType, eventName, isEcommerceEvent);
+            var label = utils.calculateLabel(eventType, eventParams, eCommerceParams, sectionParams);
+          }
           // 유저 정보 설정
           var userData = utils.getUserData();
 
@@ -926,6 +947,11 @@
         var memberType = user.mbrType ? (user.mbrType === "MBR" ? "정회원" : "준회원") : undefined;
         var is_login = user.isLogin ? '1' : 'U';
         var login_type = user.lgnType;
+        
+
+        if(sha512Cno !== zeroValue && sha512Cno.length === 128 && utils.getCookie('gaUserCNO') !== sha512Cno) {
+            utils.setCookie('gaUserCNO', sha512_cno, 30);
+        }
 
         return {
           ep_cd10_channel_type: channel,
