@@ -536,20 +536,17 @@
 
           // Check if the event is an eCommerce event
           if (isEcommerceEvent) {
-            if (eventType !== 'etc' && eventType !== 'select-item2') {
-              // If it is an eCommerce event and not 'etc' or 'select-item2'
-              if (element.dataset.gtmEcommerce) {
-                data = JSON.parse(element.dataset.gtmEcommerce);
-              }
-            } else {
-              // Handle 'etc' case where both gtmEcommerce and gtmBody need to be combined
-              var ec_element = element.closest('[data-gtm-ecommerce]');
-              
-              if (ec_element && ec_element.dataset.gtmEcommerce) {
-                var ec_data = JSON.parse(ec_element.dataset.gtmEcommerce);
-                Object.assign(data, ec_data); // Merge eCommerce data
-              }
+            var ecData;
+            var evData;
+            // If it is an eCommerce event and not 'etc' or 'select-item2'
+            if (element.dataset.gtmEcommerce) {
+              ecData = JSON.parse(element.dataset.gtmEcommerce);
             }
+            if (element.dataset.gtmBody) {
+              evData = JSON.parse(element.dataset.gtmEcommerce);
+            }
+            data = Object.assign({}, ecData, evData);
+
           } else if (element.dataset.gtmBody) {
             // Handle non-eCommerce events that have gtmBody data
             data = JSON.parse(element.dataset.gtmBody);
