@@ -23,7 +23,7 @@
 
     // 앱으로 데이터 전달 함수
     var utils = {
-       customSendEvent: function (eventType, eventData, items) {
+      customSendEvent: function (eventType, eventData, items) {
         // 입력 유효성 검사
         if (typeof eventType !== "string" || eventType.trim() === "") {
           console.error("Invalid input: eventType must be a non-empty string.");
@@ -35,20 +35,19 @@
           return null;
         }
 
-        if (!Array.isArray(items) || items.length === 0) {
-          console.error("Invalid input: items must be a non-empty array.");
-          return null;
-        }
-
-        // "eventParams"와 "eCommerceParams"를 포함하는 객체 생성
+        // 기본 객체 생성
         var result = {
-          eventParams: eventData,
-          eCommerceParams: {
+          eventParams: eventData
+        };
+
+        // items가 배열일 경우에만 eCommerceParams 추가
+        if (Array.isArray(items) && items.length > 0) {
+          result.eCommerceParams = {
             ecommerce: {
               items: items
             }
-          }
-        };
+          };
+        }
 
         // handleEvent_v3 호출
         try {
@@ -861,6 +860,9 @@
       // 헬퍼 함수: eventParams 매핑 규칙
       eventMappingRules: function() {
         return [
+          { source: 'ep_category', target: 'ep_category' },
+          { source: 'ep_action', target: 'ep_action' },
+          { source: 'ep_label', target: 'ep_label' },
           { source: 'label', target: 'ep_label_text' },
           { source: 'label1', target: 'ep_category_depth1' },
           { source: 'label2', target: 'ep_category_depth2' },
