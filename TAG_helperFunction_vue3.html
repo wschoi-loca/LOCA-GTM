@@ -647,7 +647,6 @@
           var sectionParams = utils.replaceCharacters(processResult.sectionParams);
           var eventParams = utils.replaceCharacters(processResult.eventParams);
           var eCommerceParams = processResult.eCommerceParams;
-          console.log('processResult', processResult)
 
           // 어트리뷰트 데이터 생성
           var attributeData = utils.generateAttributeData(
@@ -657,13 +656,6 @@
             eventParams,
             eCommerceParams
           );
-          console.log('attributeData', utils.generateAttributeData(
-            eventType,
-            pageParams,
-            sectionParams,
-            eventParams,
-            eCommerceParams
-          ))
           // 데이터 매핑 호출
           utils.mappingData_v3(attributeData, isHtmlElement);
         } catch (e) {
