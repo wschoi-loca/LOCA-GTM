@@ -7,20 +7,6 @@
     var isGAIOS = browserInfo.indexOf('GA_iOS_WK') > -1;
     var commonGAData = {};
 
-    // 콘솔찍을 도메인 목록을 배열로 정의
-    var devDomains = [
-      'tlocashop.lottecard.co.kr',
-      'dmoweb3.lottecard.co.kr',
-      'dmoweb2.lottecard.co.kr',
-      'dlocashop.lottecard.co.kr',
-      'locashop.lottecard.co.kr'
-    ];
-
-    // 현재 페이지의 도메인이 유효한 도메인 목록에 포함되는지 확인
-    var isDevDomain = devDomains.some(function(domain) {
-      return window.location.hostname.includes(domain);
-    });
-
     // 앱으로 데이터 전달 함수
     var utils = {
       customSendEvent: function (eventType, eventData, items) {
@@ -655,6 +641,13 @@
             eventParams,
             eCommerceParams
           );
+          console.log('att',utils.generateAttributeData(
+            eventType,
+            pageParams,
+            sectionParams,
+            eventParams,
+            eCommerceParams
+          ))
           // 데이터 매핑 호출
           utils.mappingData_v3(attributeData, isHtmlElement);
         } catch (e) {
@@ -759,24 +752,24 @@
           var eventParams = {};
           var eCommerceParams = data.eCommerceParams || {};
           var pageParams = data.pageParams || {};
-
-          // 매핑 작업
-          utils.mapParams(sectionParams, data.sectionParams, utils.sectionMappingRules());
-          utils.mapParams(eventParams, data.eventParams, utils.eventMappingRules());
-
+          console.log("Data",data)
           // 이벤트 관련 값 처리
           var eventName = isHtmlElement
             ? utils.generateEventName(eventType, data, utils.isEcommerceEvent(eventType))
             : eventType;
           var category = isHtmlElement
             ? utils.calculateCategory(data, eventParams, sectionParams, pageParams, utils.isEcommerceEvent(eventType))
-            : (data.ep_category || '');
+            : (data.eventParams.ep_category || '');
           var action = isHtmlElement
             ? utils.calculateAction(eventType, eventName, utils.isEcommerceEvent(eventType))
-            : (data.ep_action || '');
+            : (data.eventParams.ep_action || '');
           var label = isHtmlElement
             ? utils.calculateLabel(eventType, eventParams, eCommerceParams, sectionParams)
-            : (data.ep_label || '');
+            : (data.eventParams.ep_label || '');
+
+          // 매핑 작업
+          utils.assignIfExists_v3(sectionParams, data.sectionParams, utils.sectionMappingRules());
+          utils.assignIfExists_v3(eventParams, data.eventParams, utils.eventMappingRules());
 
           // 유저 정보 설정
           var userData = utils.getUserData();
@@ -799,6 +792,23 @@
               ep_cd49_timestamp: utils.getTimeStamp_v3()
             }
           ]);
+          console.log("finalEventParams",utils.mergeParams([
+            eventParams,
+            sectionParams,
+            pageParams,
+            {
+              ep_category: category,
+              ep_action: action,
+              ep_label: label,
+              ep_cd10_channel_type: userData.ep_cd10_channel_type,
+              ep_cd54_lgn_session_id1: userData.ep_cd54_lgn_session_id1,
+              ep_cd55_lgn_session_id2: userData.ep_cd55_lgn_session_id2,
+              ep_cd4_lgn_yn: userData.ep_cd4_lgn_yn,
+              ep_cd5_lgn_type: userData.ep_cd5_lgn_type,
+              ep_cd122_lgn_dtti: userData.ep_cd122_lgn_dtti,
+              ep_cd49_timestamp: utils.getTimeStamp_v3()
+            }
+          ]))
 
           var setUserProperties = {
             user_id: userData.user_id,
@@ -826,11 +836,6 @@
           console.error('mappingData_v3 함수 ERROR:', e.message, e.stack);
         }
       }.bind(utils),
-
-      // 헬퍼 함수: 매핑 작업 수행
-      mapParams: function(target, source, mappingRules) {
-        utils.assignIfExists_v3(target, source, mappingRules);
-      },
 
       // 헬퍼 함수: sectionParams 매핑 규칙
       sectionMappingRules: function() {
