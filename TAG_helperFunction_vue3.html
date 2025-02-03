@@ -770,13 +770,13 @@
             : eventType;
           var category = isHtmlElement
             ? utils.calculateCategory(data, eventParams, sectionParams, pageParams, utils.isEcommerceEvent(eventType))
-            : (data.category || '');
+            : (data.ep_category || '');
           var action = isHtmlElement
             ? utils.calculateAction(eventType, eventName, utils.isEcommerceEvent(eventType))
-            : (data.action || '');
+            : (data.ep_action || '');
           var label = isHtmlElement
             ? utils.calculateLabel(eventType, eventParams, eCommerceParams, sectionParams)
-            : (data.label || '');
+            : (data.ep_label || '');
 
           // 유저 정보 설정
           var userData = utils.getUserData();
