@@ -987,7 +987,7 @@
         
 
         if(sha512Cno !== zeroValue && sha512Cno.length === 128 && utils.getCookie('gaUserCNO') !== sha512Cno) {
-            utils.setCookie('gaUserCNO', sha512_cno, 30);
+            utils.setCookie('gaUserCNO', sha512Cno, 30);
         }
 
         return {
