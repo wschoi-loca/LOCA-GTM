@@ -760,13 +760,13 @@
             ? utils.generateEventName(eventType, data, utils.isEcommerceEvent(eventType))
             : eventType;
           var category = isHtmlElement
-            ? utils.calculateCategory(data, eventParams, sectionParams, pageParams, utils.isEcommerceEvent(eventType))
+            ? utils.calculateCategory(data, data.eventParams, data.sectionParams, data.pageParams, utils.isEcommerceEvent(eventType))
             : (data.eventParams.ep_category || '');
           var action = isHtmlElement
             ? utils.calculateAction(eventType, eventName, utils.isEcommerceEvent(eventType))
             : (data.eventParams.ep_action || '');
           var label = isHtmlElement
-            ? utils.calculateLabel(eventType, eventParams, eCommerceParams, sectionParams)
+            ? utils.calculateLabel(eventType, data.eventParams, data.eCommerceParams, data.sectionParams)
             : (data.eventParams.ep_label || '');
 
           // 매핑 작업
@@ -935,10 +935,10 @@
           return '띵샵_이커머스';
         }
         var isPopup = data.sectionParams && data.sectionParams.is_popup;
-        var category = eventParams.ep_cd14_cts_nm || eventParams.ep_label_text || eventParams.ep_category_depth1 || 'n';
+        var category = sectionParams.label1 || eventParams.label1 || eventParams.cts_nm || eventParams.label || 'n';
         return isPopup
-          ? '팝업_' + (pageParams.ep_cd15_page_depth1 || 'n')
-          : '콘텐츠_' + category + '_메인_' + (pageParams.ep_cd15_page_depth1 || 'n');
+          ? '팝업_' + (category+ '_' + pageParams.ep_cd77_cur_page_title || 'n')
+          : '콘텐츠_' + category+ '_' + (pageParams.ep_cd77_cur_page_title || 'n');
       },
 
       // 헬퍼 함수: 액션 계산
@@ -958,19 +958,20 @@
             (eCommerceParams.ecommerce.items && eCommerceParams.ecommerce.items[0]
               ? eCommerceParams.ecommerce.items[0].item_id
               : '') ||
-            eventParams.ep_cd14_cts_nm ||
-            eventParams.ep_label_text ||
-            eventParams.ep_category_depth1 ||
+            eventParams._cts_nm ||
+            eventParams.label ||
+            sectionParams.label1 ||
+            eventParams.label1 ||
             'n'
           );
         }
 
-        var id = eventParams.ep_cd42_cts_id || 'n';
-        var sid = eventParams.ep_cd79_sub_cts_id || 'n';
-        var or1 = sectionParams.ep_vertical_index || 'n';
-        var or2 = eventParams.ep_horizontal_index || 'n';
-        var de = eventParams.ep_cd14_cts_nm || eventParams.ep_label_text || 'n';
-        var clk = eventParams.ep_label_text || 'n';
+        var id = eventParams.cts_id || 'n';
+        var sid = eventParams.sub_cts_id || 'n';
+        var or1 = sectionParams.index || 'n';
+        var or2 = eventParams.index || 'n';
+        var de = eventParams.cts_nm || eventParams.label || sectionParams.label1 || eventParams.label1 || 'n';
+        var clk = eventParams.label || 'n';
 
         return eventType === 'visibility'
           ? 'id:' + id + '_sid:' + sid + '_or1:' + or1 + '_or2:' + or2 + '_de:' + de
