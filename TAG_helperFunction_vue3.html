@@ -983,6 +983,7 @@
 
         var zeroValue = Array(128 + 1).join('0'); // '0'.repeat(128) 대체
         var user = window._gtm && window._gtm.user ? window._gtm.user : {};
+        var _gtm = window._gtm || {};
         var sha512Cno = user.sha512_cno || utils.getCookie('gaUserCNO') || zeroValue;
 
         var channel = utils.channelMapping(window.location.hostname);
@@ -993,7 +994,7 @@
         var sha512Cno_2 = sha512Cno.substring(100);
 
         var memberType = user.mbrType ? (user.mbrType === "MBR" ? "정회원" : "준회원") : undefined;
-        var is_login = user.isLogin ? '1' : 'U';
+        var is_login = _gtm.isLogin ? '1' : (user.isLogin ? '1' : 'U'); 
         var login_type = user.lgnType;
         
 
