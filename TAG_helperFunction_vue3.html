@@ -697,12 +697,26 @@
         });
       }.bind(utils),
 
-        // 헬퍼 함수: handleEvent_v3 섹션 데이터 가져오기
-      getSectionParams: function(element) {
+    // Helper function: get section data by recursively checking data-gtm-section-find-continue attributes
+    getSectionParams: function(element) {
+        var data = {};
         var sectionElement = element.closest('[data-gtm-section]');
-        return sectionElement ? utils.getGtmBodyData_v3(sectionElement) || {} : {};
-      },
 
+        while (sectionElement) {
+            var sectionData = utils.getGtmBodyData_v3(sectionElement);
+            if (sectionData) {
+                data = Object.assign({}, sectionData, data); // Merge current section data with accumulated data
+            }
+
+            if (sectionElement.hasAttribute('data-gtm-section-find-continue')) {
+                sectionElement = sectionElement.parentElement.closest('[data-gtm-section]');
+            } else {
+                break;
+            }
+        }
+
+        return data;
+    },
       // 헬퍼 함수: handleEvent_v3 이벤트 데이터 가져오기
       getEventParams: function(element, eventType) {
 
