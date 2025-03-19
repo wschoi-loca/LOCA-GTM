@@ -9,6 +9,97 @@
 
     // 앱으로 데이터 전달 함수
     var utils = {
+      parsePopupViewElements: function(element) {
+        var popupClass = element.classList.contains('popup-layer') ? 'popup-layer' :
+                        element.classList.contains('bottomsheet') ? 'bottomsheet' : null;
+
+        if (!popupClass) {
+          return null;
+        }
+
+        var popupHeader = element.querySelector('.popup-header');
+        var popupContent = element.querySelector('.popup-content');
+        var popupFooter = element.querySelector('.popup-footer');
+        var popupArticle = element.querySelector('article');
+
+        var popupData = {
+          popup_class: popupClass,
+          popup_header: popupHeader ? popupHeader.innerText : '',
+          popup_content: popupContent ? popupContent.innerText : '',
+          popup_footer: popupFooter ? popupFooter.innerText : '',
+          popup_article: popupArticle ? popupArticle.innerText : '',
+        };
+
+        // data-gtm-popup-visibility와 data-gtm-body 속성을 추가합니다.
+        element.setAttribute('data-gtm-popup-visibility', '');
+        element.setAttribute('data-gtm-popup-body', JSON.stringify(popupData));
+        utils.autoPopupView(element);
+      },
+      parsePopupClickElements: function(element) {
+        var popupClass = element.classList.contains('popup-layer') ? 'popup-layer' :
+                        element.classList.contains('bottomsheet') ? 'bottomsheet' : null;
+
+        if (!popupClass) {
+          return null;
+        }
+
+        var popupHeader = element.querySelector('.popup-header');
+        var popupContent = element.querySelector('.popup-content');
+        var popupFooter = element.querySelector('.popup-footer');
+        var popupArticle = element.querySelector('article');
+        var popupButtons = element.querySelectorAll('button');
+        console.log(popupButtons)
+
+        popupButtons.forEach(function(popupButton) {
+
+          var popupData = {
+            popup_class: popupClass,
+            popup_header: popupHeader ? popupHeader.innerText : '',
+            popup_content: popupContent ? popupContent.innerText : '',
+            popup_footer: popupFooter ? popupFooter.innerText : '',
+            popup_article: popupArticle ? popupArticle.innerText : '',
+            popup_button: popupButton.innerText,
+            label: popupArticle ? popupArticle.innerText : '',
+            cts_group8: popupClass,
+            cts_group9:  popupArticle ? popupArticle.innerText : '',
+            cts_group10: popupHeader ? popupHeader.innerText : '',
+            cts_group11: popupContent ? popupContent.innerText : '',
+            cts_group12: popupFooter ? popupFooter.innerText : '',
+          };
+
+          popupButton.setAttribute('data-gtm-popup-click', '');
+          popupButton.setAttribute('data-gtm-popup-body', JSON.stringify(popupData));
+        });
+      },
+      autoPopupView: function(element) {
+        var popupClass = element.classList.contains('popup-layer') ? 'popup-layer' :
+                        element.classList.contains('bottomsheet') ? 'bottomsheet' : null;
+        var popupHeader = element.querySelector('.popup-header');
+        var popupContent = element.querySelector('.popup-content');
+        var popupFooter = element.querySelector('.popup-footer');
+        var popupArticle = element.querySelector('article');
+
+        var eventType = "popup_view"
+ 
+        var eventData = {
+          ep_category: "auto_popup",
+          ep_action: "노출",
+          ep_label: popupArticle ? popupArticle.innerText : '',
+          label: popupArticle ? popupArticle.innerText : '',
+          cts_group8: popupClass,
+          cts_group9:  popupArticle ? popupArticle.innerText : '',
+          cts_group10: popupHeader ? popupHeader.innerText : '',
+          cts_group11: popupContent ? popupContent.innerText : '',
+          cts_group12: popupFooter ? popupFooter.innerText : '',
+          popup_class: popupClass,
+          popup_header:  popupArticle ? popupArticle.innerText : '',
+          popup_content: popupHeader ? popupHeader.innerText : '',
+          popup_footer: popupContent ? popupContent.innerText : '',
+          popup_article: popupFooter ? popupFooter.innerText : '',
+        };
+        window._gtmutils.customSendEvent(eventType ,eventData);
+      },
+
       customSendEvent: function (eventType, eventData, items) {
         // 입력 유효성 검사
         if (typeof eventType !== "string" || eventType.trim() === "") {
@@ -104,9 +195,9 @@
      },
       replaceCharacters: function (obj) {
         var replacements = {
-        '\\\\n': '',   // '\\n'을 ''로 대체
-        '\\n': ' ',   // '\n'을 ' '로 대체
-        '<br>': ' ', // '<br>'을 ' '로 대체
+        '\\\\n': '|',   // '\\n'을 '|'로 대체
+        '\\n': '|',   // '\n'을 '|'로 대체
+        '<br>': '|', // '<br>'을 '|'로 대체
         };
 
         // 객체의 키-값 쌍을 순회하면서 문자열 값의 경우 대체 작업 수행
@@ -774,7 +865,7 @@
             ? utils.generateEventName(eventType, data, utils.isEcommerceEvent(eventType))
             : eventType;
           var category = isHtmlElement
-            ? utils.calculateCategory(data, data.eventParams, data.sectionParams, data.pageParams, utils.isEcommerceEvent(eventType))
+            ? utils.calculateCategory(data, data.eventParams, data.sectionParams, data.pageParams, utils.isEcommerceEvent(eventType), eventType)
             : (data.eventParams.ep_category || '');
           var action = isHtmlElement
             ? utils.calculateAction(eventType, eventName, utils.isEcommerceEvent(eventType))
@@ -937,6 +1028,13 @@
           { source: 'cts_group11', target: 'ep_cd111_cts_group11' },
           { source: 'cts_group12', target: 'ep_cd112_cts_group12' },
           { source: 'cts_group13', target: 'ep_cd113_cts_group13' },
+          { source: 'popup_class', target: 'ep_popup_class' },
+          { source: 'popup_class', target: 'ep_popup_class' },
+          { source: 'popup_header', target: 'ep_popup_header' },
+          { source: 'popup_content', target: 'ep_popup_content' },
+          { source: 'popup_footer', target: 'ep_popup_footer' },
+          { source: 'popup_article', target: 'ep_popup_article' },
+          { source: 'popup_button', target: 'ep_popup_button' },
         ];
       },
       // 헬퍼 함수: 이커머스 이벤트 여부 확인
@@ -951,22 +1049,22 @@
 
       // 헬퍼 함수: 이벤트 이름 생성
       generateEventName: function(eventType, data, isEcommerceEvent) {
-        var isPopup = data.sectionParams && data.sectionParams.is_popup ? 'popup' : 'cts';
-        var baseName = isEcommerceEvent
-          ? eventType
+        var isPopup = data.sectionParams && data.sectionParams.is_popup? 'popup' : 'cts';
+        var baseName = isEcommerceEvent || eventType == 'popup_click'
+          ? eventType 
           : isPopup + '_' + (eventType === 'visibility' ? 'view' : eventType);
 
         return baseName.replace(/-/g, '_'); // Template Literal 제거
       },
 
       // 헬퍼 함수: 카테고리 계산
-      calculateCategory: function(data, eventParams, sectionParams, pageParams, isEcommerceEvent) {
+      calculateCategory: function(data, eventParams, sectionParams, pageParams, isEcommerceEvent, eventType) {
         if (isEcommerceEvent) {
           return '띵샵_이커머스';
         }
         var isPopup = data.sectionParams && data.sectionParams.is_popup;
         var category = sectionParams.label1 || eventParams.label1 || eventParams.cts_nm || eventParams.label || 'n';
-        return isPopup
+        return isPopup || eventType === 'popup_click'
           ? '팝업_' + (category+ '_' + pageParams.ep_cd77_cur_page_title || 'n')
           : '콘텐츠_' + category+ '_' + (pageParams.ep_cd77_cur_page_title || 'n');
       },
@@ -1073,6 +1171,9 @@
     };
 
     window._gtmutils = {
+      parsePopupClickElements: utils.parsePopupClickElements,
+      parsePopupViewElements: utils.parsePopupViewElements,
+      autoPopupView: utils.autoPopupView,
       customSendEvent: utils.customSendEvent,
       resetDataLayer: utils.resetDataLayer,
       sendGAHybrid_v3: utils.sendGAHybrid_v3,
