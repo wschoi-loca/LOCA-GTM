@@ -32,6 +32,8 @@
 
         // data-gtm-popup-visibility와 data-gtm-body 속성을 추가합니다.
         element.setAttribute('data-gtm-popup-visibility', '');
+        element.setAttribute('data-gtm-section', '');
+        element.setAttribute('data-gtm-section-find-continue', '');
         element.setAttribute('data-gtm-popup-body', JSON.stringify(popupData));
         utils.autoPopupView(element);
       },
@@ -43,28 +45,12 @@
           return null;
         }
 
-        var popupHeader = element.querySelector('.popup-header');
-        var popupContent = element.querySelector('.popup-content');
-        var popupFooter = element.querySelector('.popup-footer');
-        var popupArticle = element.querySelector('article');
         var popupButtons = element.querySelectorAll('button');
-        console.log(popupButtons)
 
         popupButtons.forEach(function(popupButton) {
 
           var popupData = {
-            popup_class: popupClass,
-            popup_header: popupHeader ? popupHeader.innerText : '',
-            popup_content: popupContent ? popupContent.innerText : '',
-            popup_footer: popupFooter ? popupFooter.innerText : '',
-            popup_article: popupArticle ? popupArticle.innerText : '',
             popup_button: popupButton.innerText,
-            label: popupArticle ? popupArticle.innerText : '',
-            cts_group8: popupClass,
-            cts_group9:  popupArticle ? popupArticle.innerText : '',
-            cts_group10: popupHeader ? popupHeader.innerText : '',
-            cts_group11: popupContent ? popupContent.innerText : '',
-            cts_group12: popupFooter ? popupFooter.innerText : '',
           };
 
           popupButton.setAttribute('data-gtm-popup-click', '');
@@ -99,7 +85,39 @@
         };
         window._gtmutils.customSendEvent(eventType ,eventData);
       },
+      autoPopupClick: function(element) {
+        1. closest 로 popup-layer 또는 bottomsheet 클래스를 가진 부모 요소를 찾습니다.
+        2. 찾은 부모 요소의 클래스에 따라 popupClass 변수에 'popup-layer' 또는 'bottomsheet'를 할당합니다.
+        
 
+
+        var popupClass = element.classList.contains('popup-layer') ? 'popup-layer' :
+                        element.classList.contains('bottomsheet') ? 'bottomsheet' : null;
+        var popupHeader = element.querySelector('.popup-header');
+        var popupContent = element.querySelector('.popup-content');
+        var popupFooter = element.querySelector('.popup-footer');
+        var popupArticle = element.querySelector('article');
+
+        var eventType = "popup_view"
+ 
+        var eventData = {
+          ep_category: "auto_popup",
+          ep_action: "노출",
+          ep_label: popupArticle ? popupArticle.innerText : '',
+          label: popupArticle ? popupArticle.innerText : '',
+          cts_group8: popupClass,
+          cts_group9:  popupArticle ? popupArticle.innerText : '',
+          cts_group10: popupHeader ? popupHeader.innerText : '',
+          cts_group11: popupContent ? popupContent.innerText : '',
+          cts_group12: popupFooter ? popupFooter.innerText : '',
+          popup_class: popupClass,
+          popup_header:  popupArticle ? popupArticle.innerText : '',
+          popup_content: popupHeader ? popupHeader.innerText : '',
+          popup_footer: popupContent ? popupContent.innerText : '',
+          popup_article: popupFooter ? popupFooter.innerText : '',
+        };
+        window._gtmutils.customSendEvent(eventType ,eventData);
+      },
       customSendEvent: function (eventType, eventData, items) {
         // 입력 유효성 검사
         if (typeof eventType !== "string" || eventType.trim() === "") {
@@ -697,6 +715,7 @@
           ep_cd45_ex_act_rpl_id: urlParams.ex_act_rpl_id,
           ep_cd56_cms_cno: urlParams.cmscno,
           ep_cd123_cur_page_fullurl: fullURL,
+          //ep_cd64_card_apply_code: urlParams.vtCdKndC,
         };
       },
 
@@ -883,9 +902,9 @@
 
           // 최종 eventParams 병합
           var finalEventParams = utils.mergeParams([
+            pageParams,
             eventParams,
             sectionParams,
-            pageParams,
             {
               ep_category: category,
               ep_action: action,
@@ -959,8 +978,7 @@
           { source: 'search_result', target: 'ep_srch_result' },
           { source: 'search_result_click', target: 'ep_cd27_srch_res_clk_nm' },
           { source: 'card_name', target: 'ep_cd12_card_name' },
-          { source: 'card_code', target: 'ep_card_code' },
-          { source: 'card_new_or_exist', target: 'ep_cd64_card_apply_code' },
+          { source: 'card_code', target: 'ep_cd64_card_apply_code' },
           { source: 'card_type', target: 'ep_cd65_card_apply_kind' },
           { source: 'fin_prod_name', target: 'ep_cd13_fn_pd_nm' },
           { source: 'fin_amount', target: 'ep_cd17_fn_loan_amt' },
@@ -1003,8 +1021,7 @@
           { source: 'search_result', target: 'ep_srch_result' },
           { source: 'search_result_click', target: 'ep_cd27_srch_res_clk_nm' },
           { source: 'card_name', target: 'ep_cd12_card_name' },
-          { source: 'card_code', target: 'ep_card_code' },
-          { source: 'card_new_or_exist', target: 'ep_cd64_card_apply_code' },
+          { source: 'card_code', target: 'ep_cd64_card_apply_code' },
           { source: 'card_type', target: 'ep_cd65_card_apply_kind' },
           { source: 'fin_prod_name', target: 'ep_cd13_fn_pd_nm' },
           { source: 'fin_amount', target: 'ep_cd17_fn_loan_amt' },
@@ -1049,22 +1066,22 @@
 
       // 헬퍼 함수: 이벤트 이름 생성
       generateEventName: function(eventType, data, isEcommerceEvent) {
-        var isPopup = data.sectionParams && data.sectionParams.is_popup? 'popup' : 'cts';
-        var baseName = isEcommerceEvent || eventType == 'popup_click'
-          ? eventType 
+        var isPopup = data.sectionParams && data.sectionParams.is_popup ? 'popup' : 'cts';
+        var baseName = isEcommerceEvent
+          ? eventType
           : isPopup + '_' + (eventType === 'visibility' ? 'view' : eventType);
 
         return baseName.replace(/-/g, '_'); // Template Literal 제거
       },
 
       // 헬퍼 함수: 카테고리 계산
-      calculateCategory: function(data, eventParams, sectionParams, pageParams, isEcommerceEvent, eventType) {
+      calculateCategory: function(data, eventParams, sectionParams, pageParams, isEcommerceEvent) {
         if (isEcommerceEvent) {
           return '띵샵_이커머스';
         }
         var isPopup = data.sectionParams && data.sectionParams.is_popup;
         var category = sectionParams.label1 || eventParams.label1 || eventParams.cts_nm || eventParams.label || 'n';
-        return isPopup || eventType === 'popup_click'
+        return isPopup
           ? '팝업_' + (category+ '_' + pageParams.ep_cd77_cur_page_title || 'n')
           : '콘텐츠_' + category+ '_' + (pageParams.ep_cd77_cur_page_title || 'n');
       },
