@@ -100,6 +100,7 @@
         window._gtmutils.customSendEvent(eventType ,eventData);
       },
       autoPopupClick: function(element) {
+        try {
         // 1. element에서 closest로 popup-layer 또는 bottomsheet 클래스를 가진 부모 요소를 찾습니다.
         var popupParent = element.closest('.popup-layer, .bottomsheet');
         
@@ -116,12 +117,18 @@
         var popupSectionData = popupSectionDataString ? JSON.parse(popupSectionDataString) : {};
 
         // 4. data-gtm-section-find-continue 속성이 있으면, closest로 data-gtm-section 부모 요소를 찾아 popupSectionData를 누적합니다.
-        var sectionParent = element.closest('[data-gtm-section-find-continue]');
+        var sectionParent = popupParent.closest('[data-gtm-section-find-continue]');
         while (sectionParent) {
-          var sectionDataString = sectionParent.getAttribute('data-gtm-section');
-          var sectionData = sectionDataString ? JSON.parse(sectionDataString) : {};
-          Object.assign(popupSectionData, sectionData);
-          sectionParent = sectionParent.closest('[data-gtm-section-find-continue]');
+            var sectionData = utils.getGtmBodyData_v3(sectionParent);
+            if (sectionData) {
+              popupSectionData = Object.assign({}, popupSectionData, sectionData); // 현 섹션 데이터를 누적된 데이터와 병합
+            }
+
+            if (sectionParent.hasAttribute('data-gtm-section-find-continue')) {
+              sectionParent = sectionParent.parentElement.closest('[data-gtm-section]');
+            } else {
+                break;
+            }
         }
 
         // 5. element에서 data-gtm-popup-click 요소의 data-gtm-popup-body 값을 가져와 popupButtonData 변수에 할당합니다.
@@ -139,7 +146,11 @@
         // 7. customSendEvent 함수를 호출하여 이벤트를 전송합니다.
         var eventType = "auto_popup_click";
         console.log(eventData);
-        window._gtmutils.customSendEvent(eventType, eventData);
+        return window._gtmutils.customSendEvent(eventType, eventData);
+        } catch (e){
+          console.error('autoPopupClick 함수 ERROR');
+          console.error(e.message);
+        }
       },
       customSendEvent: function (eventType, eventData, items) {
         // 입력 유효성 검사
