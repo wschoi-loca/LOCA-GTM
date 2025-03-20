@@ -58,6 +58,7 @@
         popupButtons.forEach(function(popupButton) {
 
           var popupData = {
+            label: popupButton.innerText,
             cts_group13: popupButton.innerText,
             popup_button: popupButton.innerText,
           };
@@ -124,11 +125,17 @@
         // 5. element에서 data-gtm-popup-click 요소의 data-gtm-popup-body 값을 가져와 popupButtonData 변수에 할당합니다.
         var popupButtonData = JSON.parse(element.getAttribute('data-gtm-popup-body'));
 
-        // 6. popupSectionData와 popupButtonData를 합쳐서 eventData 객체를 생성합니다.
+        // 6. popupSectionData와 popupButtonData를 합칩니다.
         var eventData = Object.assign({}, popupSectionData, popupButtonData);
+
+        // ep_category, ep_action, ep_label 변수를 eventData에 합칩니다.
+        eventData.ep_category = "auto_popup_click";
+        eventData.ep_action = "클릭";
+        eventData.ep_label = popupButtonData.popup_button ? popupButtonData.popup_button : '';
 
         // 7. customSendEvent 함수를 호출하여 이벤트를 전송합니다.
         var eventType = "auto_popup_click";
+        console.log(eventData)
         window._gtmutils.customSendEvent(eventType, eventData);
       },
       customSendEvent: function (eventType, eventData, items) {
@@ -1204,6 +1211,7 @@
       parsePopupClickElements: utils.parsePopupClickElements,
       parsePopupViewElements: utils.parsePopupViewElements,
       autoPopupView: utils.autoPopupView,
+      autoPopupClick: utils.autoPopupClick,
       customSendEvent: utils.customSendEvent,
       resetDataLayer: utils.resetDataLayer,
       sendGAHybrid_v3: utils.sendGAHybrid_v3,
