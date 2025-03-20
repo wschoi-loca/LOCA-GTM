@@ -16,18 +16,26 @@
         if (!popupClass) {
           return null;
         }
-
+        var popupTopLevelText = element.innerText;
+        var popupArticle = element.querySelector('article');
         var popupHeader = element.querySelector('.popup-header');
         var popupContent = element.querySelector('.popup-content');
         var popupFooter = element.querySelector('.popup-footer');
-        var popupArticle = element.querySelector('article');
 
         var popupData = {
+          cts_group7: popupClass,
+          cts_group8: popupTopLevelText,
+          cts_group9:  popupArticle ? popupArticle.innerText : '',
+          cts_group10: popupHeader ? popupHeader.innerText : '',
+          cts_group11: popupContent ? popupContent.innerText : '',
+          cts_group12: popupFooter ? popupFooter.innerText : '',
+          popup_topLevel_text: popupTopLevelText? popupTopLevelText : '',
+          popup_article: popupArticle ? popupArticle.innerText : '',
           popup_class: popupClass,
           popup_header: popupHeader ? popupHeader.innerText : '',
           popup_content: popupContent ? popupContent.innerText : '',
           popup_footer: popupFooter ? popupFooter.innerText : '',
-          popup_article: popupArticle ? popupArticle.innerText : '',
+          
         };
 
         // data-gtm-popup-visibility와 data-gtm-body 속성을 추가합니다.
@@ -50,6 +58,7 @@
         popupButtons.forEach(function(popupButton) {
 
           var popupData = {
+            cts_group13: popupButton.innerText,
             popup_button: popupButton.innerText,
           };
 
@@ -60,63 +69,67 @@
       autoPopupView: function(element) {
         var popupClass = element.classList.contains('popup-layer') ? 'popup-layer' :
                         element.classList.contains('bottomsheet') ? 'bottomsheet' : null;
+        var popupTopLevelText = element.innerText;
+        var popupArticle = element.querySelector('article');
         var popupHeader = element.querySelector('.popup-header');
         var popupContent = element.querySelector('.popup-content');
         var popupFooter = element.querySelector('.popup-footer');
-        var popupArticle = element.querySelector('article');
 
-        var eventType = "popup_view"
+
+        var eventType = "auto_popup_view"
  
         var eventData = {
-          ep_category: "auto_popup",
+          ep_category: "auto_popup_view",
           ep_action: "노출",
-          ep_label: popupArticle ? popupArticle.innerText : '',
+          ep_label: popupArticle ? popupArticle.innerText : popupTopLevelText? popupTopLevelText : '',
           label: popupArticle ? popupArticle.innerText : '',
-          cts_group8: popupClass,
+          cts_group7: popupClass,
+          cts_group8: popupTopLevelText,
           cts_group9:  popupArticle ? popupArticle.innerText : '',
           cts_group10: popupHeader ? popupHeader.innerText : '',
           cts_group11: popupContent ? popupContent.innerText : '',
           cts_group12: popupFooter ? popupFooter.innerText : '',
           popup_class: popupClass,
-          popup_header:  popupArticle ? popupArticle.innerText : '',
-          popup_content: popupHeader ? popupHeader.innerText : '',
-          popup_footer: popupContent ? popupContent.innerText : '',
-          popup_article: popupFooter ? popupFooter.innerText : '',
+          popup_topLevel_text: popupTopLevelText? popupTopLevelText : '',
+          popup_article: popupArticle ? popupArticle.innerText : '',
+          popup_header:  popupHeader ? popupHeader.innerText : '',
+          popup_content: popupContent ? popupContent.innerText : '',
+          popup_footer: popupFooter ? popupFooter.innerText : '',
         };
         window._gtmutils.customSendEvent(eventType ,eventData);
       },
       autoPopupClick: function(element) {
-        1. closest 로 popup-layer 또는 bottomsheet 클래스를 가진 부모 요소를 찾습니다.
-        2. 찾은 부모 요소의 클래스에 따라 popupClass 변수에 'popup-layer' 또는 'bottomsheet'를 할당합니다.
+        // 1. element에서 closest로 popup-layer 또는 bottomsheet 클래스를 가진 부모 요소를 찾습니다.
+        var popupParent = element.closest('.popup-layer, .bottomsheet');
         
+        // 2. 찾은 부모 요소의 클래스에 따라 popupClass 변수에 'popup-layer' 또는 'bottomsheet'를 할당합니다.
+        var popupClass = popupParent.classList.contains('popup-layer') ? 'popup-layer' :
+                        popupParent.classList.contains('bottomsheet') ? 'bottomsheet' : null;
+        
+        if (!popupClass) {
+          return null;
+        }
 
+        // 3. 1번에서 찾은 요소에서 data-gtm-popup-body 속성 값을 가져와 popupSectionData 변수에 할당합니다.
+        var popupSectionData = JSON.parse(popupParent.getAttribute('data-gtm-popup-body'));
 
-        var popupClass = element.classList.contains('popup-layer') ? 'popup-layer' :
-                        element.classList.contains('bottomsheet') ? 'bottomsheet' : null;
-        var popupHeader = element.querySelector('.popup-header');
-        var popupContent = element.querySelector('.popup-content');
-        var popupFooter = element.querySelector('.popup-footer');
-        var popupArticle = element.querySelector('article');
+        // 4. data-gtm-section-find-continue 속성이 있으면, closest로 data-gtm-section 부모 요소를 찾아 popupSectionData를 누적합니다.
+        var sectionParent = element.closest('[data-gtm-section-find-continue]');
+        while (sectionParent) {
+          var sectionData = JSON.parse(sectionParent.getAttribute('data-gtm-section'));
+          Object.assign(popupSectionData, sectionData);
+          sectionParent = sectionParent.closest('[data-gtm-section-find-continue]');
+        }
 
-        var eventType = "popup_view"
- 
-        var eventData = {
-          ep_category: "auto_popup",
-          ep_action: "노출",
-          ep_label: popupArticle ? popupArticle.innerText : '',
-          label: popupArticle ? popupArticle.innerText : '',
-          cts_group8: popupClass,
-          cts_group9:  popupArticle ? popupArticle.innerText : '',
-          cts_group10: popupHeader ? popupHeader.innerText : '',
-          cts_group11: popupContent ? popupContent.innerText : '',
-          cts_group12: popupFooter ? popupFooter.innerText : '',
-          popup_class: popupClass,
-          popup_header:  popupArticle ? popupArticle.innerText : '',
-          popup_content: popupHeader ? popupHeader.innerText : '',
-          popup_footer: popupContent ? popupContent.innerText : '',
-          popup_article: popupFooter ? popupFooter.innerText : '',
-        };
-        window._gtmutils.customSendEvent(eventType ,eventData);
+        // 5. element에서 data-gtm-popup-click 요소의 data-gtm-popup-body 값을 가져와 popupButtonData 변수에 할당합니다.
+        var popupButtonData = JSON.parse(element.getAttribute('data-gtm-popup-body'));
+
+        // 6. popupSectionData와 popupButtonData를 합쳐서 eventData 객체를 생성합니다.
+        var eventData = Object.assign({}, popupSectionData, popupButtonData);
+
+        // 7. customSendEvent 함수를 호출하여 이벤트를 전송합니다.
+        var eventType = "auto_popup_click";
+        window._gtmutils.customSendEvent(eventType, eventData);
       },
       customSendEvent: function (eventType, eventData, items) {
         // 입력 유효성 검사
