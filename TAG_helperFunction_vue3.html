@@ -9,6 +9,29 @@
 
     // 앱으로 데이터 전달 함수
     var utils = {
+      parseModalViewElements: function(element) {
+        var modalClass = element.classList.contains('bottom-modal') ? 'bottom-modal' :
+                        element.classList.contains('default-modal') ? 'default-modal' : null;
+
+        if (!modalClass) {
+          return null;
+        }
+        var modalTopLevelText = element.innerText;
+
+        var modealData = {
+          cts_group7: modalClass? modalClass : '',
+          cts_group8: modalTopLevelText? modalTopLevelText : '',
+          popup_topLevel_text: modalTopLevelText? modalTopLevelText : '',
+          popup_class: modalClass,
+        };
+
+        // data-gtm-popup-visibility와 data-gtm-body 속성을 추가합니다.
+        element.setAttribute('data-gtm-popup-visibility', '');
+        element.setAttribute('data-gtm-section', '');
+        element.setAttribute('data-gtm-section-find-continue', '');
+        element.setAttribute('data-gtm-popup-body', JSON.stringify(modealData));
+        utils.autoModalView(element);
+      },
       parsePopupViewElements: function(element) {
         var popupClass = element.classList.contains('popup-layer') ? 'popup-layer' :
                         element.classList.contains('bottomsheet') ? 'bottomsheet' : null;
@@ -44,6 +67,28 @@
         element.setAttribute('data-gtm-section-find-continue', '');
         element.setAttribute('data-gtm-popup-body', JSON.stringify(popupData));
         utils.autoPopupView(element);
+      },
+      parseModalClickElements: function(element) {
+        var modalClass = element.classList.contains('bottom-modal') ? 'bottom-modal' :
+                        element.classList.contains('default-modal') ? 'default-modal' : null;
+
+        if (!modalClass) {
+          return null;
+        }
+
+        var modalButtons = element.querySelectorAll('button');
+
+        modalButtons.forEach(function(modalButton) {
+
+          var modalData = {
+            label: modalButton.innerText,
+            cts_group13: modalButton.innerText,
+            popup_button: modalButton.innerText,
+          };
+
+          modalButton.setAttribute('data-gtm-popup-click', '');
+          modalButton.setAttribute('data-gtm-popup-body', JSON.stringify(modalData));
+        });
       },
       parsePopupClickElements: function(element) {
         var popupClass = element.classList.contains('popup-layer') ? 'popup-layer' :
@@ -99,6 +144,25 @@
         };
         window._gtmutils.customSendEvent(eventType ,eventData);
       },
+      autoModalView: function(element) {
+        var modalClass = element.classList.contains('bottom-modal') ? 'bottom-modal' :
+                        element.classList.contains('default-modal') ? 'default-modal' : null;
+        var modalTopLevelText = element.innerText;
+
+        var eventType = "auto_popup_view"
+ 
+        var eventData = {
+          ep_category: "auto_popup_view",
+          ep_action: "노출",
+          ep_label: modalTopLevelText ? modalTopLevelText.innerText : '',
+          label: modalTopLevelText ? modalTopLevelText.innerText : '',
+          cts_group7: modalClass,
+          cts_group8: modalTopLevelText,
+          popup_class: modalClass,
+          popup_topLevel_text: modalTopLevelText? modalTopLevelText : '',
+        };
+        window._gtmutils.customSendEvent(eventType ,eventData);
+      },
       autoPopupClick: function(element) {
         try {
         // 1. element에서 closest로 popup-layer 또는 bottomsheet 클래스를 가진 부모 요소를 찾습니다.
@@ -142,6 +206,58 @@
         eventData.ep_category = "auto_popup_click";
         eventData.ep_action = "클릭";
         eventData.ep_label = popupButtonData.popup_button ? popupButtonData.popup_button : '';
+
+        // 7. customSendEvent 함수를 호출하여 이벤트를 전송합니다.
+        var eventType = "auto_popup_click";
+        console.log(eventData);
+        return window._gtmutils.customSendEvent(eventType, eventData);
+        } catch (e){
+          console.error('autoPopupClick 함수 ERROR');
+          console.error(e.message);
+        }
+      },
+      autoModalClick: function(element) {
+        try {
+        // 1. element에서 closest로 popup-layer 또는 bottomsheet 클래스를 가진 부모 요소를 찾습니다.
+        var modalParent = element.closest('.bottom-modal, .default-modal');
+        
+        // 2. 찾은 부모 요소의 클래스에 따라 popupClass 변수에 'popup-layer' 또는 'bottomsheet'를 할당합니다.
+        var modalClass = element.classList.contains('bottom-modal') ? 'bottom-modal' :
+                        element.classList.contains('default-modal') ? 'default-modal' : null;
+        if (!modalClass) {
+          return null;
+        }
+
+        // 3. 1번에서 찾은 요소에서 data-gtm-popup-body 속성 값을 가져와 popupSectionData 변수에 할당합니다.
+        var modalSectionDataString = modalParent.getAttribute('data-gtm-popup-body');
+        var modalSectionData = modalSectionDataString ? JSON.parse(modalSectionDataString) : {};
+
+        // 4. data-gtm-section-find-continue 속성이 있으면, closest로 data-gtm-section 부모 요소를 찾아 popupSectionData를 누적합니다.
+        var sectionParent = modalParent.closest('[data-gtm-section-find-continue]');
+        while (sectionParent) {
+            var sectionData = utils.getGtmBodyData_v3(sectionParent);
+            if (sectionData) {
+              modalSectionData = Object.assign({}, modalSectionData, sectionData); // 현 섹션 데이터를 누적된 데이터와 병합
+            }
+
+            if (sectionParent.hasAttribute('data-gtm-section-find-continue')) {
+              sectionParent = sectionParent.parentElement.closest('[data-gtm-section]');
+            } else {
+                break;
+            }
+        }
+
+        // 5. element에서 data-gtm-popup-click 요소의 data-gtm-popup-body 값을 가져와 popupButtonData 변수에 할당합니다.
+        var modalButtonDataString = element.getAttribute('data-gtm-popup-body');
+        var modalButtonData = modalButtonDataString ? JSON.parse(modalButtonDataString) : {};
+
+        // 6. popupSectionData와 popupButtonData를 합칩니다.
+        var eventData = Object.assign({}, modalSectionData, modalButtonData);
+
+        // ep_category, ep_action, ep_label 변수를 eventData에 합칩니다.
+        eventData.ep_category = "auto_popup_click";
+        eventData.ep_action = "클릭";
+        eventData.ep_label = modalButtonData.popup_button ? modalButtonData.popup_button : '';
 
         // 7. customSendEvent 함수를 호출하여 이벤트를 전송합니다.
         var eventType = "auto_popup_click";
@@ -1222,9 +1338,13 @@
     };
 
     window._gtmutils = {
+      parseModalViewElements: utils.parseModalViewElements,
+      parseModalClickElements: utils.parseModalClickElements,
       parsePopupClickElements: utils.parsePopupClickElements,
       parsePopupViewElements: utils.parsePopupViewElements,
       autoPopupView: utils.autoPopupView,
+      autoModalView: utils.autoModalView,
+      autoModalClick: utils.autoModalClick,
       autoPopupClick: utils.autoPopupClick,
       customSendEvent: utils.customSendEvent,
       resetDataLayer: utils.resetDataLayer,
