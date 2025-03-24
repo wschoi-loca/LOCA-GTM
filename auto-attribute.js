@@ -1,4 +1,4 @@
-document.addEventListener("DOMContentLoaded", function () {
+
   // data-gtm-click 또는 data-gtm-visibility가 있는 요소를 제외하기 위한 함수
   function hasClosestWithPrefix(element, prefix) {
     return element.closest(`[${prefix}]`) !== null;
@@ -67,7 +67,9 @@ document.addEventListener("DOMContentLoaded", function () {
     ".swiper-slide:not([data-gtm-click]):not([data-gtm-auto-click])",
     
     // 조건 5: input 태그에 data-gtm-click 또는 data-gtm-auto-click이 없고, 부모 또는 자식 요소에 button 또는 a 태그가 없는 경우
-    "input:not([data-gtm-click]):not([data-gtm-auto-click]):not(:has(button, a)):not(:has(button, a))"
+    "input:not([data-gtm-click]):not([data-gtm-auto-click]):not(:has(button, a)):not(:has(button, a))",
+
+    ".collapse:not([data-gtm-click]):not([data-gtm-auto-click])"
   ];
   document.querySelectorAll(clickSelectors.join(",")).forEach((element) => {
     if (!hasClosestWithPrefix(element, "data-gtm-click")) {
@@ -108,4 +110,3 @@ document.addEventListener("DOMContentLoaded", function () {
       }
     }
   });
-});
