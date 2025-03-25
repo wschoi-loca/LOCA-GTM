@@ -48,16 +48,8 @@
         var popupData = {
           cts_group7: popupClass,
           cts_group8: popupTopLevelText,
-          cts_group9:  popupArticle ? popupArticle.innerText : '',
-          cts_group10: popupHeader ? popupHeader.innerText : '',
-          cts_group11: popupContent ? popupContent.innerText : '',
-          cts_group12: popupFooter ? popupFooter.innerText : '',
           popup_topLevel_text: popupTopLevelText? popupTopLevelText : '',
-          popup_article: popupArticle ? popupArticle.innerText : '',
           popup_class: popupClass,
-          popup_header: popupHeader ? popupHeader.innerText : '',
-          popup_content: popupContent ? popupContent.innerText : '',
-          popup_footer: popupFooter ? popupFooter.innerText : '',
           
         };
 
@@ -131,16 +123,8 @@
           label: popupArticle ? popupArticle.innerText : '',
           cts_group7: popupClass,
           cts_group8: popupTopLevelText,
-          cts_group9:  popupArticle ? popupArticle.innerText : '',
-          cts_group10: popupHeader ? popupHeader.innerText : '',
-          cts_group11: popupContent ? popupContent.innerText : '',
-          cts_group12: popupFooter ? popupFooter.innerText : '',
           popup_class: popupClass,
           popup_topLevel_text: popupTopLevelText? popupTopLevelText : '',
-          popup_article: popupArticle ? popupArticle.innerText : '',
-          popup_header:  popupHeader ? popupHeader.innerText : '',
-          popup_content: popupContent ? popupContent.innerText : '',
-          popup_footer: popupFooter ? popupFooter.innerText : '',
         };
         window._gtmutils.customSendEvent(eventType ,eventData);
       },
@@ -366,6 +350,8 @@
         '\\\\n': '|',   // '\\n'을 '|'로 대체
         '\\n': '|',   // '\n'을 '|'로 대체
         '<br>': '|', // '<br>'을 '|'로 대체
+        '\\t': '|', 
+        '\\\\t': '|', 
         };
 
         // 객체의 키-값 쌍을 순회하면서 문자열 값의 경우 대체 작업 수행
@@ -573,6 +559,7 @@
           "mc2.lottecard.co.kr":  "APP",
           "mc.lottecard.co.kr":  "APP",
           "mcapp.lottecard.co.kr":  "APP",
+          "trip.lottecard.co.kr":  "APP",
           "dmoweb2.lottecard.co.kr": "APP_TEST",
           "dmbt.lottecard.co.kr": "APP_TEST",
           "m-thing-dev.lottecard.co.kr": "APP_TEST",
@@ -586,6 +573,7 @@
           "dmc2.lottecard.co.kr":  "APP_TEST",
           "dmc.lottecard.co.kr":  "APP_TEST",
           "dmcapp.lottecard.co.kr":  "APP_TEST",
+          "dtrip.lottecard.co.kr":  "APP_TEST",
         };
   
         return urlMapping[url] || "APP_undefinedChannel";
@@ -1151,6 +1139,8 @@
           { source: 'cts_group11', target: 'ep_cd111_cts_group11' },
           { source: 'cts_group12', target: 'ep_cd112_cts_group12' },
           { source: 'cts_group13', target: 'ep_cd113_cts_group13' },
+          { source: 'popup_class', target: 'ep_popup_class' },
+          { source: 'popup_topLevel_text', target: 'ep_popup_topLevel_text' },
         ];
       },
 
@@ -1196,12 +1186,7 @@
           { source: 'cts_group12', target: 'ep_cd112_cts_group12' },
           { source: 'cts_group13', target: 'ep_cd113_cts_group13' },
           { source: 'popup_class', target: 'ep_popup_class' },
-          { source: 'popup_class', target: 'ep_popup_class' },
-          { source: 'popup_header', target: 'ep_popup_header' },
-          { source: 'popup_content', target: 'ep_popup_content' },
-          { source: 'popup_footer', target: 'ep_popup_footer' },
-          { source: 'popup_article', target: 'ep_popup_article' },
-          { source: 'popup_button', target: 'ep_popup_button' },
+          { source: 'popup_topLevel_text', target: 'ep_popup_topLevel_text' },
         ];
       },
       // 헬퍼 함수: 이커머스 이벤트 여부 확인
