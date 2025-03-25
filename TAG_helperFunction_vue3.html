@@ -16,14 +16,16 @@
         if (!modalClass) {
           return null;
         }
-        var modalTopLevelText = element.innerText;
+        var modalMessage = element.innerText;
 
         var modealData = {
-          cts_group7: modalClass? modalClass : '',
-          cts_group8: modalTopLevelText? modalTopLevelText : '',
-          popup_topLevel_text: modalTopLevelText? modalTopLevelText : '',
+          cts_group7: modalClass ? modalClass : '',
+          cts_group8: modalMessage ? modalMessage : '',
+          popup_message: modalMessage ? modalMessage : '',
           popup_class: modalClass,
         };
+
+        modealData = utils.replaceCharacters(modealData);
 
         // data-gtm-popup-visibility와 data-gtm-body 속성을 추가합니다.
         element.setAttribute('data-gtm-popup-visibility', '');
@@ -39,19 +41,16 @@
         if (!popupClass) {
           return null;
         }
-        var popupTopLevelText = element.innerText;
-        var popupArticle = element.querySelector('article');
-        var popupHeader = element.querySelector('.popup-header');
-        var popupContent = element.querySelector('.popup-content');
-        var popupFooter = element.querySelector('.popup-footer');
+        var popupMessage = element.innerText;
 
         var popupData = {
           cts_group7: popupClass,
-          cts_group8: popupTopLevelText,
-          popup_topLevel_text: popupTopLevelText? popupTopLevelText : '',
+          cts_group8: popupMessage ? popupMessage : '',
+          popup_message: popupMessage ? popupMessage : '',
           popup_class: popupClass,
-          
         };
+
+        popupData = utils.replaceCharacters(popupData);
 
         // data-gtm-popup-visibility와 data-gtm-body 속성을 추가합니다.
         element.setAttribute('data-gtm-popup-visibility', '');
@@ -78,6 +77,8 @@
             popup_button: modalButton.innerText,
           };
 
+          modalData = utils.replaceCharacters(modalData);
+
           modalButton.setAttribute('data-gtm-popup-click', '');
           modalButton.setAttribute('data-gtm-popup-body', JSON.stringify(modalData));
         });
@@ -100,6 +101,8 @@
             popup_button: popupButton.innerText,
           };
 
+          popupData = utils.replaceCharacters(popupData);
+
           popupButton.setAttribute('data-gtm-popup-click', '');
           popupButton.setAttribute('data-gtm-popup-body', JSON.stringify(popupData));
         });
@@ -107,43 +110,38 @@
       autoPopupView: function(element) {
         var popupClass = element.classList.contains('popup-layer') ? 'popup-layer' :
                         element.classList.contains('bottomsheet') ? 'bottomsheet' : null;
-        var popupTopLevelText = element.innerText;
-        var popupArticle = element.querySelector('article');
-        var popupHeader = element.querySelector('.popup-header');
-        var popupContent = element.querySelector('.popup-content');
-        var popupFooter = element.querySelector('.popup-footer');
-
+        var popupMessage = element.innerText;
 
         var eventType = "auto_popup_view"
  
         var eventData = {
           ep_category: "auto_popup_view",
           ep_action: "노출",
-          ep_label: popupArticle ? popupArticle.innerText : popupTopLevelText? popupTopLevelText : '',
+          ep_label: popupArticle ? popupArticle.innerText : popupMessage? popupMessage : '',
           label: popupArticle ? popupArticle.innerText : '',
           cts_group7: popupClass,
-          cts_group8: popupTopLevelText,
+          cts_group8: popupMessage? popupMessage : '',
           popup_class: popupClass,
-          popup_topLevel_text: popupTopLevelText? popupTopLevelText : '',
+          popup_message: popupMessage? popupMessage : '',
         };
         window._gtmutils.customSendEvent(eventType ,eventData);
       },
       autoModalView: function(element) {
         var modalClass = element.classList.contains('bottom-modal') ? 'bottom-modal' :
                         element.classList.contains('default-modal') ? 'default-modal' : null;
-        var modalTopLevelText = element.innerText;
+        var modalMessage = element.innerText;
 
         var eventType = "auto_popup_view"
  
         var eventData = {
           ep_category: "auto_popup_view",
           ep_action: "노출",
-          ep_label: modalTopLevelText ? modalTopLevelText.innerText : '',
+          ep_label: modalMessage ? modalMessage.innerText : '',
           label: modalTopLevelText ? modalTopLevelText.innerText : '',
           cts_group7: modalClass,
-          cts_group8: modalTopLevelText,
+          cts_group8: modalMessage? modalMessage : '',
           popup_class: modalClass,
-          popup_topLevel_text: modalTopLevelText? modalTopLevelText : '',
+          popup_message: modalMessage? modalMessage : '',
         };
         window._gtmutils.customSendEvent(eventType ,eventData);
       },
@@ -1140,7 +1138,8 @@
           { source: 'cts_group12', target: 'ep_cd112_cts_group12' },
           { source: 'cts_group13', target: 'ep_cd113_cts_group13' },
           { source: 'popup_class', target: 'ep_popup_class' },
-          { source: 'popup_topLevel_text', target: 'ep_popup_topLevel_text' },
+          { source: 'popup_message', target: 'ep_popup_message' },
+          { source: 'popup_button', target: 'ep_popup_button' },
         ];
       },
 
@@ -1186,7 +1185,8 @@
           { source: 'cts_group12', target: 'ep_cd112_cts_group12' },
           { source: 'cts_group13', target: 'ep_cd113_cts_group13' },
           { source: 'popup_class', target: 'ep_popup_class' },
-          { source: 'popup_topLevel_text', target: 'ep_popup_topLevel_text' },
+          { source: 'popup_message', target: 'ep_popup_message' },
+          { source: 'popup_button', target: 'ep_popup_button' },
         ];
       },
       // 헬퍼 함수: 이커머스 이벤트 여부 확인
