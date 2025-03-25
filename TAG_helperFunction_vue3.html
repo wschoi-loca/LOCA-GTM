@@ -170,7 +170,7 @@
         
         // 2. 찾은 부모 요소의 클래스에 따라 popupClass 변수에 'popup-layer' 또는 'bottomsheet'를 할당합니다.
         var popupClass = popupParent && popupParent.classList.contains('popup-layer') ? 'popup-layer' :
-                        popupParent && popupParent.classList.contains('bottomsheet') ? 'bottomsheet' : null;
+                         popupParent && popupParent.classList.contains('bottomsheet') ? 'bottomsheet' : null;
         
         if (!popupClass) {
           return null;
@@ -222,8 +222,8 @@
         var modalParent = element.closest('.bottom-modal, .default-modal');
         
         // 2. 찾은 부모 요소의 클래스에 따라 popupClass 변수에 'popup-layer' 또는 'bottomsheet'를 할당합니다.
-        var modalClass = element.classList.contains('bottom-modal') ? 'bottom-modal' :
-                        element.classList.contains('default-modal') ? 'default-modal' : null;
+        var modalClass = modalParent.classList.contains('bottom-modal') ? 'bottom-modal' :
+                         modalParent.classList.contains('default-modal') ? 'default-modal' : null;
         if (!modalClass) {
           return null;
         }
