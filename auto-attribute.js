@@ -99,7 +99,7 @@ function getLabelValue(element) {
         if (labelValue) {
           parentElement.setAttribute(
             "data-gtm-auto-body",
-            JSON.stringify({ label: labelValue })
+            JSON.stringify({ label: labelValue, auto_tag_yn: "Y" })
           );
         }
       } else if (element.tagName.toLowerCase() === 'li' || element.tagName.toLowerCase() === 'input' || element.classList.contains('swiper-slide')) {
@@ -108,7 +108,7 @@ function getLabelValue(element) {
         if (labelValue) {
           element.setAttribute(
             "data-gtm-auto-body",
-            JSON.stringify({ label: labelValue })
+            JSON.stringify({ label: labelValue , auto_tag_yn: "Y" })
           );
         }
       }

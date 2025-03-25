@@ -23,6 +23,7 @@
           cts_group8: modalMessage ? modalMessage : '',
           popup_message: modalMessage ? modalMessage : '',
           popup_class: modalClass,
+          auto_tag_yn: "Y"
         };
 
         modealData = utils.replaceCharacters(modealData);
@@ -48,6 +49,7 @@
           cts_group8: popupMessage ? popupMessage : '',
           popup_message: popupMessage ? popupMessage : '',
           popup_class: popupClass,
+          auto_tag_yn: "Y"
         };
 
         popupData = utils.replaceCharacters(popupData);
@@ -75,6 +77,7 @@
             label: modalButton.innerText,
             cts_group13: modalButton.innerText,
             popup_button: modalButton.innerText,
+            auto_tag_yn: "Y"
           };
 
           modalData = utils.replaceCharacters(modalData);
@@ -99,6 +102,7 @@
             label: popupButton.innerText,
             cts_group13: popupButton.innerText,
             popup_button: popupButton.innerText,
+            auto_tag_yn: "Y"
           };
 
           popupData = utils.replaceCharacters(popupData);
@@ -1124,6 +1128,17 @@
           { source: 'cts_name', target: 'ep_cd14_cts_nm' },
           { source: 'cts_id', target: 'ep_cd42_cts_id' },
           { source: 'cts_sub_id', target: 'ep_cd79_sub_cts_id' },
+          { source: 'cts_sub_id1', target: 'ep_sub_cts_id1' },
+          { source: 'cts_sub_id2', target: 'ep_sub_cts_id2' },
+          { source: 'cts_sub_id3', target: 'ep_sub_cts_id3' },
+          { source: 'cts_sub_id4', target: 'ep_sub_cts_id4' },
+          { source: 'cts_sub_id5', target: 'ep_sub_cts_id5' },
+          { source: 'sub_cts_id', target: 'ep_cd79_sub_cts_id' },
+          { source: 'sub_cts_id1', target: 'ep_sub_cts_id1' },
+          { source: 'sub_cts_id2', target: 'ep_sub_cts_id2' },
+          { source: 'sub_cts_id3', target: 'ep_sub_cts_id3' },
+          { source: 'sub_cts_id4', target: 'ep_sub_cts_id4' },
+          { source: 'sub_cts_id5', target: 'ep_sub_cts_id5' },
           { source: 'cts_group1', target: 'ep_cd101_cts_group1' },
           { source: 'cts_group2', target: 'ep_cd102_cts_group2' },
           { source: 'cts_group3', target: 'ep_cd103_cts_group3' },
@@ -1140,6 +1155,7 @@
           { source: 'popup_class', target: 'ep_popup_class' },
           { source: 'popup_message', target: 'ep_popup_message' },
           { source: 'popup_button', target: 'ep_popup_button' },
+          { source: 'auto_tag_yn', target: 'ep_auto_tag_yn' },
         ];
       },
 
@@ -1155,6 +1171,11 @@
           { source: 'label3', target: 'ep_category_depth3' },
           { source: 'label4', target: 'ep_category_depth4' },
           { source: 'label5', target: 'ep_category_depth5' },
+          { source: 'label6', target: 'ep_category_depth6' },
+          { source: 'label7', target: 'ep_category_depth7' },
+          { source: 'label8', target: 'ep_category_depth8' },
+          { source: 'label9', target: 'ep_category_depth9' },
+          { source: 'label10', target: 'ep_category_depth10' },
           { source: 'search_keyword', target: 'ep_cd25_srch_keyword' },
           { source: 'search_type', target: 'ep_srch_keyword_type' },
           { source: 'search_result', target: 'ep_srch_result' },
@@ -1170,6 +1191,17 @@
           { source: 'cts_name', target: 'ep_cd14_cts_nm' },
           { source: 'cts_id', target: 'ep_cd42_cts_id' },
           { source: 'cts_sub_id', target: 'ep_cd79_sub_cts_id' },
+          { source: 'cts_sub_id1', target: 'ep_sub_cts_id1' },
+          { source: 'cts_sub_id2', target: 'ep_sub_cts_id2' },
+          { source: 'cts_sub_id3', target: 'ep_sub_cts_id3' },
+          { source: 'cts_sub_id4', target: 'ep_sub_cts_id4' },
+          { source: 'cts_sub_id5', target: 'ep_sub_cts_id5' },
+          { source: 'sub_cts_id', target: 'ep_cd79_sub_cts_id' },
+          { source: 'sub_cts_id1', target: 'ep_sub_cts_id1' },
+          { source: 'sub_cts_id2', target: 'ep_sub_cts_id2' },
+          { source: 'sub_cts_id3', target: 'ep_sub_cts_id3' },
+          { source: 'sub_cts_id4', target: 'ep_sub_cts_id4' },
+          { source: 'sub_cts_id5', target: 'ep_sub_cts_id5' },
           { source: 'index', target: 'ep_horizontal_index' },
           { source: 'cts_group1', target: 'ep_cd101_cts_group1' },
           { source: 'cts_group2', target: 'ep_cd102_cts_group2' },
@@ -1187,6 +1219,7 @@
           { source: 'popup_class', target: 'ep_popup_class' },
           { source: 'popup_message', target: 'ep_popup_message' },
           { source: 'popup_button', target: 'ep_popup_button' },
+          { source: 'auto_tag_yn', target: 'ep_auto_tag_yn' },
         ];
       },
       // 헬퍼 함수: 이커머스 이벤트 여부 확인
