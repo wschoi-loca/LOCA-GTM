@@ -9,312 +9,152 @@
 
     // 앱으로 데이터 전달 함수
     var utils = {
-      parseModalViewElements: function(element) {
-        var modalClass = element.classList.contains('bottom-modal') ? 'bottom-modal' :
-                        element.classList.contains('default-modal') ? 'default-modal' : null;
-
-        if (!modalClass) {
-          return null;
-        }
-        var modalMessage = element.innerText;
-
-        var modealData = {
-          cts_group7: modalClass ? modalClass : '',
-          cts_group8: modalMessage ? modalMessage : '',
-          popup_message: modalMessage ? modalMessage : '',
-          popup_class: modalClass,
-          auto_tag_yn: "Y"
-        };
-
-        modealData = utils.replaceCharacters(modealData);
-
-        // data-gtm-popup-visibility와 data-gtm-body 속성을 추가합니다.
-        element.setAttribute('data-gtm-popup-visibility', '');
-        element.setAttribute('data-gtm-section', '');
-        element.setAttribute('data-gtm-section-find-continue', '');
-        element.setAttribute('data-gtm-popup-body', JSON.stringify(modealData));
-        utils.autoModalView(element);
+      getPopupClass: function(element) {
+        var popupClasses = ['popup-layer', 'bottomsheet', 'bottom-modal', 'default-modal', 'popup-layer-detail'];
+        var foundClass = null;
+        popupClasses.forEach(function(popupClass) {
+          if (element.classList.contains(popupClass)) {
+            foundClass = popupClass;
+          }
+        });
+        return foundClass;
       },
+
       parsePopupViewElements: function(element) {
-        var popupClass = element.classList.contains('popup-layer') ? 'popup-layer' :
-                        element.classList.contains('bottomsheet') ? 'bottomsheet' : null;
+        var popupClass = utils.getPopupClass(element);
 
         if (!popupClass) {
           return null;
         }
-        var popupMessage = element.innerText;
 
-        var popupData = {
+        var popupMessage = element.innerText;
+        var popupData = utils.replaceCharacters({
           cts_group7: popupClass,
-          cts_group8: popupMessage ? popupMessage : '',
-          popup_message: popupMessage ? popupMessage : '',
+          cts_group8: popupMessage || '',
+          popup_message: popupMessage || '',
           popup_class: popupClass,
           auto_tag_yn: "Y"
-        };
+        });
 
-        popupData = utils.replaceCharacters(popupData);
-
-        // data-gtm-popup-visibility와 data-gtm-body 속성을 추가합니다.
         element.setAttribute('data-gtm-popup-visibility', '');
         element.setAttribute('data-gtm-section', '');
         element.setAttribute('data-gtm-section-find-continue', '');
         element.setAttribute('data-gtm-popup-body', JSON.stringify(popupData));
         utils.autoPopupView(element);
       },
-      parseModalClickElements: function(element) {
-        var modalClass = element.classList.contains('bottom-modal') ? 'bottom-modal' :
-                        element.classList.contains('default-modal') ? 'default-modal' : null;
-
-        if (!modalClass) {
-          return null;
-        }
-
-        var modalButtons = element.querySelectorAll('button');
-
-        modalButtons.forEach(function(modalButton) {
-          // Check if button contains an X SVG
-          var isCloseButton = !!modalButton.querySelector('svg path[d*="M4 20 L20 4"][d*="M4 4l16 16"]') || 
-                              !!modalButton.querySelector('svg[viewBox="0 0 24 24"] path[stroke-linecap="round"][stroke-linejoin="round"]');
-
-          var modalData = {
-            label: modalButton.innerText,
-            cts_group13: modalButton.innerText,
-            popup_button: modalButton.innerText,
-            auto_tag_yn: "Y"
-          };
-
-          // Add "닫기" to popup_button if this is a close button with SVG
-          if (isCloseButton) {
-            modalData.label = "닫기";
-            modalData.cts_group13 = "닫기";
-            modalData.popup_button = "닫기";
-          }
-
-          modalData = utils.replaceCharacters(modalData);
-
-          modalButton.setAttribute('data-gtm-popup-click', '');
-          modalButton.setAttribute('data-gtm-popup-body', JSON.stringify(modalData));
-        });
-      },
 
       parsePopupClickElements: function(element) {
-        var popupClass = element.classList.contains('popup-layer') ? 'popup-layer' :
-                        element.classList.contains('bottomsheet') ? 'bottomsheet' : null;
+        var popupClass = utils.getPopupClass(element);
 
         if (!popupClass) {
           return null;
         }
 
         var popupButtons = element.querySelectorAll('button');
+        for (var i = 0; i < popupButtons.length; i++) {
+          var popupButton = popupButtons[i];
+          var isCloseButton = !!popupButton.querySelector('svg path[d*="M4 20 L20 4"][d*="M4 4l16 16"]') ||
+            !!popupButton.querySelector('svg[viewBox="0 0 24 24"] path[stroke-linecap="round"][stroke-linejoin="round"]');
 
-        popupButtons.forEach(function(popupButton) {
-          // Check if button contains an X SVG
-          var isCloseButton = !!popupButton.querySelector('svg path[d*="M4 20 L20 4"][d*="M4 4l16 16"]') || 
-                              !!popupButton.querySelector('svg[viewBox="0 0 24 24"] path[stroke-linecap="round"][stroke-linejoin="round"]');
-
-          var popupData = {
-            label: popupButton.innerText,
-            cts_group13: popupButton.innerText,
-            popup_button: popupButton.innerText,
+          var popupData = utils.replaceCharacters({
+            label: isCloseButton ? "닫기" : popupButton.innerText,
+            cts_group13: isCloseButton ? "닫기" : popupButton.innerText,
+            popup_button: isCloseButton ? "닫기" : popupButton.innerText,
             auto_tag_yn: "Y"
-          };
-
-          // Add "닫기" to popup_button if this is a close button with SVG
-          if (isCloseButton) {
-            popupData.label = "닫기";
-            popupData.cts_group13 = "닫기";
-            popupData.popup_button = "닫기";
-          }
-
-          popupData = utils.replaceCharacters(popupData);
+          });
 
           popupButton.setAttribute('data-gtm-popup-click', '');
           popupButton.setAttribute('data-gtm-popup-body', JSON.stringify(popupData));
-        });
+        }
       },
+
       autoPopupView: function(element) {
-        var popupClass = element.classList.contains('popup-layer') ? 'popup-layer' :
-                        element.classList.contains('bottomsheet') ? 'bottomsheet' : null;
+        var popupClass = utils.getPopupClass(element);
         var popupMessage = element.innerText;
 
-        var eventType = "popup_view"
- 
         var eventData = {
           ep_category: "popup_view",
           ep_action: "노출",
-          ep_label: popupArticle ? popupArticle.innerText : popupMessage? popupMessage : '',
-          label: popupArticle ? popupArticle.innerText : '',
+          ep_label: popupMessage || '',
+          label: popupMessage || '',
           cts_group7: popupClass,
-          cts_group8: popupMessage? popupMessage : '',
+          cts_group8: popupMessage || '',
           popup_class: popupClass,
-          popup_message: popupMessage? popupMessage : '',
+          popup_message: popupMessage || ''
         };
-        window._gtmutils.customSendEvent(eventType ,eventData);
-      },
-      autoModalView: function(element) {
-        var modalClass = element.classList.contains('bottom-modal') ? 'bottom-modal' :
-                        element.classList.contains('default-modal') ? 'default-modal' : null;
-        var modalMessage = element.innerText;
 
-        var eventType = "popup_view"
- 
-        var eventData = {
-          ep_category: "popup_view",
-          ep_action: "노출",
-          ep_label: modalMessage ? modalMessage.innerText : '',
-          label: modalMessage ? modalMessage.innerText : '',
-          cts_group7: modalClass,
-          cts_group8: modalMessage? modalMessage : '',
-          popup_class: modalClass,
-          popup_message: modalMessage? modalMessage : '',
-        };
-        window._gtmutils.customSendEvent(eventType ,eventData);
+        window._gtmutils.customSendEvent("popup_view", eventData);
       },
+
       autoPopupClick: function(element) {
         try {
-        // 1. element에서 closest로 popup-layer 또는 bottomsheet 클래스를 가진 부모 요소를 찾습니다.
-        var popupParent = element.closest('.popup-layer, .bottomsheet');
-        
-        // 2. 찾은 부모 요소의 클래스에 따라 popupClass 변수에 'popup-layer' 또는 'bottomsheet'를 할당합니다.
-        var popupClass = popupParent && popupParent.classList.contains('popup-layer') ? 'popup-layer' :
-                         popupParent && popupParent.classList.contains('bottomsheet') ? 'bottomsheet' : null;
-        
-        if (!popupClass) {
-          return null;
-        }
+          var popupParent = element.closest('.popup-layer, .bottomsheet');
+          var popupClass = utils.getPopupClass(popupParent);
 
-        // 3. 1번에서 찾은 요소에서 data-gtm-popup-body 속성 값을 가져와 popupSectionData 변수에 할당합니다.
-        var popupSectionDataString = popupParent.getAttribute('data-gtm-popup-body');
-        var popupSectionData = popupSectionDataString ? JSON.parse(popupSectionDataString) : {};
+          if (!popupClass) {
+            return null;
+          }
 
-        // 4. data-gtm-section-find-continue 속성이 있으면, closest로 data-gtm-section 부모 요소를 찾아 popupSectionData를 누적합니다.
-        var sectionParent = popupParent.closest('[data-gtm-section-find-continue]');
-        while (sectionParent) {
+          var popupSectionData = JSON.parse(popupParent.getAttribute('data-gtm-popup-body') || '{}');
+          var sectionParent = popupParent.closest('[data-gtm-section-find-continue]');
+
+          while (sectionParent) {
             var sectionData = utils.getGtmBodyData_v3(sectionParent);
             if (sectionData) {
-              popupSectionData = Object.assign({}, popupSectionData, sectionData); // 현 섹션 데이터를 누적된 데이터와 병합
+              Object.assign(popupSectionData, sectionData);
             }
-
             if (sectionParent.hasAttribute('data-gtm-section-find-continue')) {
               sectionParent = sectionParent.parentElement.closest('[data-gtm-section]');
             } else {
-                break;
+              break;
             }
-        }
+          }
 
-        // 5. element에서 data-gtm-popup-click 요소의 data-gtm-popup-body 값을 가져와 popupButtonData 변수에 할당합니다.
-        var popupButtonDataString = element.closest('[data-gtm-popup-click]').getAttribute('data-gtm-popup-body');
-        var popupButtonData = popupButtonDataString ? JSON.parse(popupButtonDataString) : {};
+          var popupButtonData = JSON.parse(element.closest('[data-gtm-popup-click]').getAttribute('data-gtm-popup-body') || '{}');
+          var eventData = Object.assign({}, popupSectionData, popupButtonData, {
+            ep_category: "popup_click",
+            ep_action: "클릭",
+            ep_label: popupButtonData.popup_button || ''
+          });
 
-        // 6. popupSectionData와 popupButtonData를 합칩니다.
-        var eventData = Object.assign({}, popupSectionData, popupButtonData);
-
-        // ep_category, ep_action, ep_label 변수를 eventData에 합칩니다.
-        eventData.ep_category = "popup_click";
-        eventData.ep_action = "클릭";
-        eventData.ep_label = popupButtonData.popup_button ? popupButtonData.popup_button : '';
-
-        // 7. customSendEvent 함수를 호출하여 이벤트를 전송합니다.
-        var eventType = "popup_click";
-        return window._gtmutils.customSendEvent(eventType, eventData);
-        } catch (e){
-          console.error('autoPopupClick 함수 ERROR');
-          console.error(e.message);
+          window._gtmutils.customSendEvent("popup_click", eventData);
+        } catch (e) {
+          console.error('autoPopupClick 함수 ERROR', e.message);
         }
       },
-      autoModalClick: function(element) {
-        try {
-        // 1. element에서 closest로 popup-layer 또는 bottomsheet 클래스를 가진 부모 요소를 찾습니다.
-        var modalParent = element.closest('.bottom-modal, .default-modal');
-        
-        // 2. 찾은 부모 요소의 클래스에 따라 popupClass 변수에 'popup-layer' 또는 'bottomsheet'를 할당합니다.
-        var modalClass = modalParent.classList.contains('bottom-modal') ? 'bottom-modal' :
-                         modalParent.classList.contains('default-modal') ? 'default-modal' : null;
-        if (!modalClass) {
-          return null;
-        }
 
-        // 3. 1번에서 찾은 요소에서 data-gtm-popup-body 속성 값을 가져와 popupSectionData 변수에 할당합니다.
-        var modalSectionDataString = modalParent.getAttribute('data-gtm-popup-body');
-        var modalSectionData = modalSectionDataString ? JSON.parse(modalSectionDataString) : {};
-
-        // 4. data-gtm-section-find-continue 속성이 있으면, closest로 data-gtm-section 부모 요소를 찾아 popupSectionData를 누적합니다.
-        var sectionParent = modalParent.closest('[data-gtm-section-find-continue]');
-        while (sectionParent) {
-            var sectionData = utils.getGtmBodyData_v3(sectionParent);
-            if (sectionData) {
-              modalSectionData = Object.assign({}, modalSectionData, sectionData); // 현 섹션 데이터를 누적된 데이터와 병합
-            }
-
-            if (sectionParent.hasAttribute('data-gtm-section-find-continue')) {
-              sectionParent = sectionParent.parentElement.closest('[data-gtm-section]');
-            } else {
-                break;
-            }
-        }
-
-        // 5. element에서 data-gtm-popup-click 요소의 data-gtm-popup-body 값을 가져와 popupButtonData 변수에 할당합니다.
-        var modalButtonDataString = element.closest('[data-gtm-popup-click]').getAttribute('data-gtm-popup-body');
-        var modalButtonData = modalButtonDataString ? JSON.parse(modalButtonDataString) : {};
-
-        // 6. popupSectionData와 popupButtonData를 합칩니다.
-        var eventData = Object.assign({}, modalSectionData, modalButtonData);
-
-        // ep_category, ep_action, ep_label 변수를 eventData에 합칩니다.
-        eventData.ep_category = "popup_click";
-        eventData.ep_action = "클릭";
-        eventData.ep_label = modalButtonData.popup_button ? modalButtonData.popup_button : '';
-
-        // 7. customSendEvent 함수를 호출하여 이벤트를 전송합니다.
-        var eventType = "popup_click";
-        return window._gtmutils.customSendEvent(eventType, eventData);
-        } catch (e){
-          console.error('autoPopupClick 함수 ERROR');
-          console.error(e.message);
-        }
-      },
       autoCtsClick: function(element) {
         try {
-        // 1. 
-        var autoParent = element.closest('[data-gtm-section]');
-        
-        // 3. 1번에서 찾은 요소에서 data-gtm-auto-body 속성 값을 가져와 autoSectionData 변수에 할당합니다.
-        var autoSectionDataString = autoParent.getAttribute('data-gtm-section');
-        var autoSectionData = autoSectionDataString ? JSON.parse(autoSectionDataString) : {};
+          var autoParent = element.closest('[data-gtm-section]');
+          var autoSectionData = {};
 
-        // 4. data-gtm-section-find-continue 속성이 있으면, closest로 data-gtm-section 부모 요소를 찾아 popupSectionData를 누적합니다.
-        var sectionParent = autoParent.closest('[data-gtm-section-find-continue]');
-        while (sectionParent) {
-            var sectionData = utils.getGtmBodyData_v3(sectionParent);
-            if (sectionData) {
-              autoSectionData = Object.assign({}, autoSectionData, sectionData); // 현 섹션 데이터를 누적된 데이터와 병합
-            }
+          if (autoParent) {
+            autoSectionData = JSON.parse(autoParent.getAttribute('data-gtm-section') || '{}');
+            var sectionParent = autoParent.closest('[data-gtm-section-find-continue]');
 
-            if (sectionParent.hasAttribute('data-gtm-section-find-continue')) {
-              sectionParent = sectionParent.parentElement.closest('[data-gtm-section]');
-            } else {
+            while (sectionParent) {
+              var sectionData = utils.getGtmBodyData_v3(sectionParent);
+              if (sectionData) {
+                Object.assign(autoSectionData, sectionData);
+              }
+              if (sectionParent.hasAttribute('data-gtm-section-find-continue')) {
+                sectionParent = sectionParent.parentElement.closest('[data-gtm-section]');
+              } else {
                 break;
+              }
             }
-        }
+          }
 
-        // 5. element에서 data-gtm-auto-click 요소의 data-gtm-auto-body 값을 가져와 autoButtonDataString 변수에 할당합니다.
-        var autoButtonDataString = element.closest('[data-gtm-auto-click]').getAttribute('data-gtm-auto-body');
-        var autoButtonData = autoButtonDataString ? JSON.parse(autoButtonDataString) : {};
+          var autoButtonData = JSON.parse(element.closest('[data-gtm-auto-click]').getAttribute('data-gtm-auto-body') || '{}');
+          var eventData = Object.assign({}, autoSectionData, autoButtonData, {
+            ep_category: "cts_click",
+            ep_action: "클릭",
+            ep_label: autoButtonData.label || ''
+          });
 
-        // 6. autoSectionData autoButtonData 합칩니다.
-        var eventData = Object.assign({}, autoSectionData, autoButtonData);
-
-        // ep_category, ep_action, ep_label 변수를 eventData에 합칩니다.
-        eventData.ep_category = "cts_click";
-        eventData.ep_action = "클릭";
-        eventData.ep_label = autoButtonData.label ? autoButtonData.label : '';
-
-        // 7. customSendEvent 함수를 호출하여 이벤트를 전송합니다.
-        var eventType = "cts_click";
-        return window._gtmutils.customSendEvent(eventType, eventData);
-        } catch (e){
-          console.error('autoPopupClick 함수 ERROR');
-          console.error(e.message);
+          window._gtmutils.customSendEvent("cts_click", eventData);
+        } catch (e) {
+          console.error('autoCtsClick 함수 ERROR', e.message);
         }
       },
       customSendEvent: function (eventType, eventData, items) {
@@ -410,29 +250,34 @@
 
        return depths;
      },
-      replaceCharacters: function (obj) {
+     replaceCharacters: function (obj) {
         var replacements = {
-        '\\\\n': '|',   // '\\n'을 '|'로 대체
-        '\\n': '|',   // '\n'을 '|'로 대체
-        '<br>': '|', // '<br>'을 '|'로 대체
-        '\\t': '|', 
-        '\\\\t': '|', 
+          '\\\\n': '|',   // '\\n'을 '|'로 대체
+          '\\n': '|',   // '\n'을 '|'로 대체
+          '<br>': '|', // '<br>'을 '|'로 대체
+          '\\t': '|', 
+          '\\\\t': '|', 
         };
 
         // 객체의 키-값 쌍을 순회하면서 문자열 값의 경우 대체 작업 수행
         Object.keys(obj).forEach(function(key) {
-            if (typeof obj[key] === 'string') {
-                var value = obj[key];
+          if (typeof obj[key] === 'string') {
+            var value = obj[key];
 
-                // replacements 딕셔너리 내의 각 대체 규칙을 적용
-                Object.keys(replacements).forEach(function(targetChar) {
-                    var replaceChar = replacements[targetChar];
-                    var regex = new RegExp(targetChar.replace(/\\/g, '\\'), 'g');
-                    value = value.replace(regex, replaceChar);
-                });
+            // replacements 딕셔너리 내의 각 대체 규칙을 적용
+            Object.keys(replacements).forEach(function(targetChar) {
+              var replaceChar = replacements[targetChar];
+              var regex = new RegExp(targetChar.replace(/\\/g, '\\'), 'g');
+              value = value.replace(regex, replaceChar);
+            });
 
-                obj[key] = value;
+            // 문자열 값을 100자 이하로 자르기
+            if (value.length > 100) {
+              value = value.substring(0, 100);
             }
+
+            obj[key] = value;
+          }
         });
 
         return obj;
