@@ -10,6 +10,7 @@ function getLabelValue(element) {
     let value = "";
     const svgCloseCheck = element.querySelector('svg[xmlns="http://www.w3.org/2000/svg"] path[d="M21 3 3 21M3 3l18 18"]');
     const svgMoveCheck = element.querySelector('svg[xmlns="http://www.w3.org/2000/svg"] path[d="m9 18 6-6-6-6"]');
+    const svgQuestionCheck = document.querySelector('svg[xmlns="http://www.w3.org/2000/svg"][fill="none"][viewBox="0 0 20 20"][class="w-6 h-6"]');;
 
     // Function to apply transformations based on provided regex patterns
     const applyTransformations = (text, patterns) => {
@@ -60,8 +61,9 @@ function getLabelValue(element) {
       value += " 닫기";
     } else if (svgMoveCheck) {
       value += " 이동하기";
-    }
-
+    } else if (svgQuestionCheck) {
+      value += " 물음표";
+    }  
     var elementTitle = applyTransformations(element.title, patterns);
     if(elementTitle) {
       value += '>'+ elementTitle;
