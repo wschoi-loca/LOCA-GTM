@@ -246,7 +246,6 @@
 
         // 7. customSendEvent 함수를 호출하여 이벤트를 전송합니다.
         var eventType = "popup_click";
-        console.log(eventData);
         return window._gtmutils.customSendEvent(eventType, eventData);
         } catch (e){
           console.error('autoPopupClick 함수 ERROR');
