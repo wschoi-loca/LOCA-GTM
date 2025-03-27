@@ -10,6 +10,7 @@
     // 앱으로 데이터 전달 함수
     var utils = {
       getPopupClass: function(element) {
+        // popupParent 도 같이 클래스 업데이트 필요함
         var popupClasses = ['popup-layer', 'bottomsheet', 'bottom-modal', 'default-modal', 'popup-layer-detail'];
         var foundClass = null;
         popupClasses.forEach(function(popupClass) {
@@ -50,7 +51,7 @@
           return null;
         }
 
-        var popupButtons = element.querySelectorAll('button', 'a');
+        var popupButtons = element.querySelectorAll('button, a');
         for (var i = 0; i < popupButtons.length; i++) {
           var popupButton = popupButtons[i];
           var isCloseButton = !!popupButton.querySelector('svg path[d*="M4 20 L20 4"][d*="M4 4l16 16"]') ||
@@ -88,7 +89,7 @@
 
       autoPopupClick: function(element) {
         try {
-          var popupParent = element.closest('.popup-layer, .bottomsheet');
+          var popupParent = element.closest('.popup-layer, .bottomsheet, .bottom-modal, .default-modal, .popup-layer-detail');
           var popupClass = utils.getPopupClass(popupParent);
 
           if (!popupClass) {
@@ -1275,6 +1276,8 @@
     };
 
     window._gtmutils = {
+      getPopupClass: utils.getPopupClass,
+      replaceCharacters: utils.replaceCharacters,
       parseModalViewElements: utils.parseModalViewElements,
       parseModalClickElements: utils.parseModalClickElements,
       parsePopupClickElements: utils.parsePopupClickElements,
