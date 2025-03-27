@@ -240,12 +240,12 @@
         var eventData = Object.assign({}, modalSectionData, modalButtonData);
 
         // ep_category, ep_action, ep_label 변수를 eventData에 합칩니다.
-        eventData.ep_category = "auto_popup_click";
+        eventData.ep_category = "popup_click";
         eventData.ep_action = "클릭";
         eventData.ep_label = modalButtonData.popup_button ? modalButtonData.popup_button : '';
 
         // 7. customSendEvent 함수를 호출하여 이벤트를 전송합니다.
-        var eventType = "auto_popup_click";
+        var eventType = "popup_click";
         console.log(eventData);
         return window._gtmutils.customSendEvent(eventType, eventData);
         } catch (e){
