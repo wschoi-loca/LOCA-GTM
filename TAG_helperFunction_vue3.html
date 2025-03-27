@@ -72,6 +72,9 @@
         var modalButtons = element.querySelectorAll('button');
 
         modalButtons.forEach(function(modalButton) {
+          // Check if button contains an X SVG
+          var isCloseButton = !!modalButton.querySelector('svg path[d*="M4 20 L20 4"][d*="M4 4l16 16"]') || 
+                              !!modalButton.querySelector('svg[viewBox="0 0 24 24"] path[stroke-linecap="round"][stroke-linejoin="round"]');
 
           var modalData = {
             label: modalButton.innerText,
@@ -80,12 +83,20 @@
             auto_tag_yn: "Y"
           };
 
+          // Add "닫기" to popup_button if this is a close button with SVG
+          if (isCloseButton) {
+            modalData.label = "닫기";
+            modalData.cts_group13 = "닫기";
+            modalData.popup_button = "닫기";
+          }
+
           modalData = utils.replaceCharacters(modalData);
 
           modalButton.setAttribute('data-gtm-popup-click', '');
           modalButton.setAttribute('data-gtm-popup-body', JSON.stringify(modalData));
         });
       },
+
       parsePopupClickElements: function(element) {
         var popupClass = element.classList.contains('popup-layer') ? 'popup-layer' :
                         element.classList.contains('bottomsheet') ? 'bottomsheet' : null;
@@ -97,6 +108,9 @@
         var popupButtons = element.querySelectorAll('button');
 
         popupButtons.forEach(function(popupButton) {
+          // Check if button contains an X SVG
+          var isCloseButton = !!popupButton.querySelector('svg path[d*="M4 20 L20 4"][d*="M4 4l16 16"]') || 
+                              !!popupButton.querySelector('svg[viewBox="0 0 24 24"] path[stroke-linecap="round"][stroke-linejoin="round"]');
 
           var popupData = {
             label: popupButton.innerText,
@@ -104,6 +118,13 @@
             popup_button: popupButton.innerText,
             auto_tag_yn: "Y"
           };
+
+          // Add "닫기" to popup_button if this is a close button with SVG
+          if (isCloseButton) {
+            popupData.label = "닫기";
+            popupData.cts_group13 = "닫기";
+            popupData.popup_button = "닫기";
+          }
 
           popupData = utils.replaceCharacters(popupData);
 
@@ -182,7 +203,7 @@
         }
 
         // 5. element에서 data-gtm-popup-click 요소의 data-gtm-popup-body 값을 가져와 popupButtonData 변수에 할당합니다.
-        var popupButtonDataString = element.getAttribute('data-gtm-popup-body');
+        var popupButtonDataString = element.closest('[data-gtm-popup-click]').getAttribute('data-gtm-popup-body');
         var popupButtonData = popupButtonDataString ? JSON.parse(popupButtonDataString) : {};
 
         // 6. popupSectionData와 popupButtonData를 합칩니다.
@@ -233,7 +254,7 @@
         }
 
         // 5. element에서 data-gtm-popup-click 요소의 data-gtm-popup-body 값을 가져와 popupButtonData 변수에 할당합니다.
-        var modalButtonDataString = element.getAttribute('data-gtm-popup-body');
+        var modalButtonDataString = element.closest('[data-gtm-popup-click]').getAttribute('data-gtm-popup-body');
         var modalButtonData = modalButtonDataString ? JSON.parse(modalButtonDataString) : {};
 
         // 6. popupSectionData와 popupButtonData를 합칩니다.
