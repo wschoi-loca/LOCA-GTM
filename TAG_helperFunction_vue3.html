@@ -50,7 +50,7 @@
           return null;
         }
 
-        var popupButtons = element.querySelectorAll('button');
+        var popupButtons = element.querySelectorAll('button', 'a');
         for (var i = 0; i < popupButtons.length; i++) {
           var popupButton = popupButtons[i];
           var isCloseButton = !!popupButton.querySelector('svg path[d*="M4 20 L20 4"][d*="M4 4l16 16"]') ||
