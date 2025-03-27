@@ -116,10 +116,10 @@
                         element.classList.contains('bottomsheet') ? 'bottomsheet' : null;
         var popupMessage = element.innerText;
 
-        var eventType = "auto_popup_view"
+        var eventType = "popup_view"
  
         var eventData = {
-          ep_category: "auto_popup_view",
+          ep_category: "popup_view",
           ep_action: "노출",
           ep_label: popupArticle ? popupArticle.innerText : popupMessage? popupMessage : '',
           label: popupArticle ? popupArticle.innerText : '',
@@ -135,10 +135,10 @@
                         element.classList.contains('default-modal') ? 'default-modal' : null;
         var modalMessage = element.innerText;
 
-        var eventType = "auto_popup_view"
+        var eventType = "popup_view"
  
         var eventData = {
-          ep_category: "auto_popup_view",
+          ep_category: "popup_view",
           ep_action: "노출",
           ep_label: modalMessage ? modalMessage.innerText : '',
           label: modalTopLevelText ? modalTopLevelText.innerText : '',
@@ -189,12 +189,12 @@
         var eventData = Object.assign({}, popupSectionData, popupButtonData);
 
         // ep_category, ep_action, ep_label 변수를 eventData에 합칩니다.
-        eventData.ep_category = "auto_popup_click";
+        eventData.ep_category = "popup_click";
         eventData.ep_action = "클릭";
         eventData.ep_label = popupButtonData.popup_button ? popupButtonData.popup_button : '';
 
         // 7. customSendEvent 함수를 호출하여 이벤트를 전송합니다.
-        var eventType = "auto_popup_click";
+        var eventType = "popup_click";
         console.log(eventData);
         return window._gtmutils.customSendEvent(eventType, eventData);
         } catch (e){
