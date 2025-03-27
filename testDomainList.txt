@@ -1,2 +1,5 @@
-팝업 테스트용
+여행HTS/팝업 테스트용
 https://dtrip.lottecard.co.kr/front/trip/point/
+
+이벤트페이지
+https://dmoweb3.lottecard.co.kr/app/LPBNFDA_V100.lc

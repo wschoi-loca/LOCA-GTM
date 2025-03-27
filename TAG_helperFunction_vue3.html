@@ -273,6 +273,50 @@
           console.error(e.message);
         }
       },
+      autoCtsClick: function(element) {
+        try {
+        // 1. 
+        var autoParent = element.closest('[data-gtm-section]');
+        
+        // 3. 1번에서 찾은 요소에서 data-gtm-auto-body 속성 값을 가져와 autoSectionData 변수에 할당합니다.
+        var autoSectionDataString = autoParent.getAttribute('data-gtm-section');
+        var autoSectionData = autoSectionDataString ? JSON.parse(autoSectionDataString) : {};
+
+        // 4. data-gtm-section-find-continue 속성이 있으면, closest로 data-gtm-section 부모 요소를 찾아 popupSectionData를 누적합니다.
+        var sectionParent = autoParent.closest('[data-gtm-section-find-continue]');
+        while (sectionParent) {
+            var sectionData = utils.getGtmBodyData_v3(sectionParent);
+            if (sectionData) {
+              autoSectionData = Object.assign({}, autoSectionData, sectionData); // 현 섹션 데이터를 누적된 데이터와 병합
+            }
+
+            if (sectionParent.hasAttribute('data-gtm-section-find-continue')) {
+              sectionParent = sectionParent.parentElement.closest('[data-gtm-section]');
+            } else {
+                break;
+            }
+        }
+
+        // 5. element에서 data-gtm-auto-click 요소의 data-gtm-auto-body 값을 가져와 autoButtonDataString 변수에 할당합니다.
+        var autoButtonDataString = element.closest('[data-gtm-auto-click]').getAttribute('data-gtm-auto-body');
+        var autoButtonData = autoButtonDataString ? JSON.parse(autoButtonDataString) : {};
+
+        // 6. autoSectionData autoButtonData 합칩니다.
+        var eventData = Object.assign({}, autoSectionData, autoButtonData);
+
+        // ep_category, ep_action, ep_label 변수를 eventData에 합칩니다.
+        eventData.ep_category = "cts_click";
+        eventData.ep_action = "클릭";
+        eventData.ep_label = autoButtonData.label ? autoButtonData.label : '';
+
+        // 7. customSendEvent 함수를 호출하여 이벤트를 전송합니다.
+        var eventType = "cts_click";
+        return window._gtmutils.customSendEvent(eventType, eventData);
+        } catch (e){
+          console.error('autoPopupClick 함수 ERROR');
+          console.error(e.message);
+        }
+      },
       customSendEvent: function (eventType, eventData, items) {
         // 입력 유효성 검사
         if (typeof eventType !== "string" || eventType.trim() === "") {
@@ -1394,6 +1438,7 @@
       autoModalView: utils.autoModalView,
       autoModalClick: utils.autoModalClick,
       autoPopupClick: utils.autoPopupClick,
+      autoCtsClick: utils.autoCtsClick,
       customSendEvent: utils.customSendEvent,
       resetDataLayer: utils.resetDataLayer,
       sendGAHybrid_v3: utils.sendGAHybrid_v3,
