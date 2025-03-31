@@ -785,13 +785,11 @@
 
           // 페이지 데이터 생성
           var pageParams = utils.generatePageParams();
-
           // 섹션, 이벤트, 이커머스 데이터 처리
           var processResult = utils.processEventData(element, eventType, isHtmlElement);
           var sectionParams = utils.replaceCharacters(processResult.sectionParams);
           var eventParams = utils.replaceCharacters(processResult.eventParams);
           var eCommerceParams = processResult.eCommerceParams;
-
           // 어트리뷰트 데이터 생성
           var attributeData = utils.generateAttributeData(
             eventType,
@@ -922,9 +920,9 @@
 
       mappingData_v3: function(data, isHtmlElement) {
         try {
-          var eventType = data.eventType;
-          var sectionParams = {};
-          var eventParams = {};
+          var eventType = data.eventType? data.eventType : '';
+          var sectionParams = data.eventParams?  data.eventParams : {};
+          var eventParams = data.eventParams?  data.eventParams : {};
           var eCommerceParams = data.eCommerceParams || {};
           var pageParams = data.pageParams || {};
           // console.log("Data",data)
