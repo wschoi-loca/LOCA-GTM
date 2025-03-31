@@ -24,6 +24,8 @@ function getLabelValue(element) {
   const svgCloseCheck = element.querySelector('svg[xmlns="http://www.w3.org/2000/svg"] path[d="M21 3 3 21M3 3l18 18"]');
   const svgMoveCheck = element.querySelector('svg[xmlns="http://www.w3.org/2000/svg"] path[d="m9 18 6-6-6-6"]');
   const svgQuestionCheck = element.querySelector('svg[xmlns="http://www.w3.org/2000/svg"][fill="none"][viewBox="0 0 20 20"][class="w-6 h-6"]');
+  const svgBackCheck = element.querySelector('svg[xmlns="http://www.w3.org/2000/svg"] path[d="m10 20-9-8 9-8"]');
+  const svgShareCheck = element.querySelector('svg[xmlns="http://www.w3.org/2000/svg"] path[d="M18 8a3 3 0 1 0 0-6 3 3 0 0 0 0 6ZM6 15a3 3 0 1 0 0-6 3 3 0 0 0 0 6ZM18 22a3 3 0 1 0 0-6 3 3 0 0 0 0 6ZM8.59 13.51l6.83 3.98M15.41 6.51l-6.82 3.98"]');
 
   // Function to apply transformations based on provided regex patterns
   const applyTransformations = (text, patterns) => {
@@ -76,6 +78,10 @@ function getLabelValue(element) {
     value += " 이동하기";
   } else if (svgQuestionCheck) {
     value += " 물음표";
+  } else if (svgBackCheck) {
+    value += " 뒤로가기";
+  } else if (svgShareCheck) {
+    value += " 공유하기";
   }
 
   var elementTitle = applyTransformations(element.title, patterns);
