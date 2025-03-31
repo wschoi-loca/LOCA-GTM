@@ -11,7 +11,7 @@
     var utils = {
       getPopupClass: function(element) {
         // popupParent 도 같이 클래스 업데이트 필요함
-        var popupClasses = ['popup-layer', 'bottomsheet', 'bottom-modal', 'default-modal', 'popup-layer-detail'];
+        var popupClasses = ['popup-layer', 'bottomsheet', 'bottom-modal', 'default-modal', 'eventDetail'];
         var foundClass = null;
         popupClasses.forEach(function(popupClass) {
           if (element.classList.contains(popupClass)) {
@@ -89,7 +89,7 @@
 
       autoPopupClick: function(element) {
         try {
-          var popupParent = element.closest('.popup-layer, .bottomsheet, .bottom-modal, .default-modal, .popup-layer-detail');
+          var popupParent = element.closest('.popup-layer, .bottomsheet, .bottom-modal, .default-modal, .eventDetail');
           var popupClass = utils.getPopupClass(popupParent);
 
           if (!popupClass) {
@@ -253,6 +253,8 @@
      },
      replaceCharacters: function (obj) {
         var replacements = {
+          '\\n\\n\\n': '|',   // '\n'을 '|'로 대체
+          '\\n\\n': '|',   // '\n'을 '|'로 대체
           '\\\\n': '|',   // '\\n'을 '|'로 대체
           '\\n': '|',   // '\n'을 '|'로 대체
           '<br>': '|', // '<br>'을 '|'로 대체
