@@ -10,6 +10,10 @@
     // 앱으로 데이터 전달 함수
     var utils = {
       getPopupClass: function(element) {
+        if(!element){
+          console.log('element is null');
+          return null
+        }
         // popupParent 도 같이 클래스 업데이트 필요함
         var popupClasses = ['popup-layer', 'bottomsheet', 'bottom-modal', 'default-modal', 'eventDetail'];
         var foundClass = null;
@@ -22,6 +26,9 @@
       },
 
       parsePopupViewElements: function(element) {
+        if(!element){
+          return null
+        }
         var popupClass = utils.getPopupClass(element);
 
         if (!popupClass) {
@@ -54,7 +61,7 @@
         var popupButtons = element.querySelectorAll('button, a');
         for (var i = 0; i < popupButtons.length; i++) {
           var popupButton = popupButtons[i];
-          var isCloseButton = !!popupButton.querySelector('svg path[d*="M4 20 L20 4"][d*="M4 4l16 16"]') ||
+          var isCloseButton = !!popupButton.querySelector('svg path[d*="M4 20 L20 4"]') || !!popupButton.querySelector('svg path[d*="M4 4l16 16"]')
             !!popupButton.querySelector('svg[viewBox="0 0 24 24"] path[stroke-linecap="round"][stroke-linejoin="round"]');
 
           var popupData = utils.replaceCharacters({
