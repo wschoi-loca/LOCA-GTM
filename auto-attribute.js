@@ -1,9 +1,9 @@
 // data-gtm-click 또는 data-gtm-visibility가 있는 요소를 제외하기 위한 함수
 function hasClosestWithPrefix(element, prefix) {
   try {
-    return element.closest(`[${prefix}]`) !== null;
+    return element.closest("[" + prefix + "]") !== null;
   } catch (error) {
-    console.error(`Error in hasClosestWithPrefix: ${error.message}`);
+    console.error("Error in hasClosestWithPrefix: " + error.message);
     return false;
   }
 }
@@ -11,13 +11,13 @@ function hasClosestWithPrefix(element, prefix) {
 // 특정 클래스를 가진 가장 가까운 부모 요소를 찾는 함수
 function hasClosestWithClass(element, classNames) {
   try {
-    for (const className of classNames) {
-      if (element.closest(`.${className}`)) {
+    for (var i = 0; i < classNames.length; i++) {
+      if (element.closest("." + classNames[i])) {
         return true;
       }
     }
   } catch (error) {
-    console.error(`Error in hasClosestWithClass: ${error.message}`);
+    console.error("Error in hasClosestWithClass: " + error.message);
   }
   return false;
 }
@@ -25,62 +25,62 @@ function hasClosestWithClass(element, classNames) {
 // 특정 ID를 가진 가장 가까운 부모 요소를 찾는 함수
 function hasClosestWithId(element, id) {
   try {
-    return element.closest(`#${id}`) !== null;
+    return element.closest("#" + id) !== null;
   } catch (error) {
-    console.error(`Error in hasClosestWithId: ${error.message}`);
+    console.error("Error in hasClosestWithId: " + error.message);
     return false;
   }
 }
 
 // Helper function to get the label value based on specified conditions
 function getLabelValue(element) {
-  let value = "";
+  var value = "";
   try {
-    const svgCloseCheck = element.querySelector('svg[xmlns="http://www.w3.org/2000/svg"] path[d="M21 3 3 21M3 3l18 18"]');
-    const svgMoveCheck = element.querySelector('svg[xmlns="http://www.w3.org/2000/svg"] path[d="m9 18 6-6-6-6"]');
-    const svgQuestionCheck = element.querySelector('svg[xmlns="http://www.w3.org/2000/svg"][fill="none"][viewBox="0 0 20 20"][class="w-6 h-6"]');
-    const svgBackCheck = element.querySelector('svg[xmlns="http://www.w3.org/2000/svg"] path[d="m10 20-9-8 9-8"]');
-    const svgShareCheck = element.querySelector('svg[xmlns="http://www.w3.org/2000/svg"] path[d="M18 8a3 3 0 1 0 0-6 3 3 0 0 0 0 6ZM6 15a3 3 0 1 0 0-6 3 3 0 0 0 0 6ZM18 22a3 3 0 1 0 0-6 3 3 0 0 0 0 6ZM8.59 13.51l6.83 3.98M15.41 6.51l-6.82 3.98"]');
+    var svgCloseCheck = element.querySelector('svg[xmlns="http://www.w3.org/2000/svg"] path[d="M21 3 3 21M3 3l18 18"]');
+    var svgMoveCheck = element.querySelector('svg[xmlns="http://www.w3.org/2000/svg"] path[d="m9 18 6-6-6-6"]');
+    var svgQuestionCheck = element.querySelector('svg[xmlns="http://www.w3.org/2000/svg"][fill="none"][viewBox="0 0 20 20"][class="w-6 h-6"]');
+    var svgBackCheck = element.querySelector('svg[xmlns="http://www.w3.org/2000/svg"] path[d="m10 20-9-8 9-8"]');
+    var svgShareCheck = element.querySelector('svg[xmlns="http://www.w3.org/2000/svg"] path[d="M18 8a3 3 0 1 0 0-6 3 3 0 0 0 0 6ZM6 15a3 3 0 1 0 0-6 3 3 0 0 0 0 6ZM18 22a3 3 0 1 0 0-6 3 3 0 0 0 0 6ZM8.59 13.51l6.83 3.98M15.41 6.51l-6.82 3.98"]');
 
-    const applyTransformations = (text, patterns) => {
+    function applyTransformations(text, patterns) {
       if (!text) return "";
-      let transformedText = text;
-      patterns.forEach(pattern => {
+      var transformedText = text;
+      patterns.forEach(function (pattern) {
         transformedText = transformedText.replace(new RegExp(pattern, 'g'), '|');
       });
       return transformedText;
-    };
+    }
 
-    const patterns = ['\\n', '<br\\s*\\/?>', '\\t' , '\\n\\n',  '\\n\\n\\n'];
+    var patterns = ['\\n', '<br\\s*\\/?>', '\\t', '\\n\\n', '\\n\\n\\n'];
 
-    const conditions = [
-      () => {
-        const altElement = element.querySelector("[alt]");
+    var conditions = [
+      function () {
+        var altElement = element.querySelector("[alt]");
         return altElement ? applyTransformations(altElement.getAttribute("alt"), patterns) : "";
       },
-      () => applyTransformations(element.innerText, patterns),
-      () => applyTransformations(element.textContent, patterns),
-      () => applyTransformations(element.outerText, patterns),
-      () => {
-        let parent = element.parentElement;
-        let level = 0;
+      function () { return applyTransformations(element.innerText, patterns); },
+      function () { return applyTransformations(element.textContent, patterns); },
+      function () { return applyTransformations(element.outerText, patterns); },
+      function () {
+        var parent = element.parentElement;
+        var level = 0;
         while (parent && !parent.innerText && level < 5) {
           parent = parent.parentElement;
           level++;
         }
         return parent && parent.innerText ? applyTransformations(parent.innerText, patterns) : "";
       },
-      () => element.getAttribute("text") ? applyTransformations(element.getAttribute("text"), patterns) : "",
-      () => element.src,
-      () => {
-        const img = element.querySelector("img[src]");
+      function () { return element.getAttribute("text") ? applyTransformations(element.getAttribute("text"), patterns) : ""; },
+      function () { return element.src; },
+      function () {
+        var img = element.querySelector("img[src]");
         return img ? img.src : "";
       },
-      () => element.className,
+      function () { return element.className; },
     ];
 
-    for (const condition of conditions) {
-      value = condition();
+    for (var i = 0; i < conditions.length; i++) {
+      value = conditions[i]();
       if (value) break;
     }
 
@@ -105,12 +105,12 @@ function getLabelValue(element) {
 
     return value.length > 100 ? value.substring(0, 100) : value;
   } catch (error) {
-    console.error(`Error in getLabelValue: ${error.message}`);
+    console.error("Error in getLabelValue: " + error.message);
     return "";
   }
 }
 
-const clickSelectors = [
+var clickSelectors = [
   "button:not([data-gtm-click]):not([data-gtm-auto-click]):not(:has(button, a))"+
   ":not(.popup-layer):not(.bottomsheet):not(.bottom-modal):not(.default-modal):not(.menu)"+
   ":not(#locaHeader)",
@@ -125,16 +125,16 @@ const clickSelectors = [
   ":not(#locaHeader)",
 ];
 
-document.querySelectorAll(clickSelectors.join(",")).forEach((element) => {
+function processClickSelectors(element) {
   try {
     if (!hasClosestWithPrefix(element, "data-gtm-click")) {
-      const excludeClasses = ['popup-layer', 'bottomsheet', 'bottom-modal', 'default-modal', 'menu'];
+      var excludeClasses = ['popup-layer', 'bottomsheet', 'bottom-modal', 'default-modal', 'menu'];
       if (!hasClosestWithClass(element, excludeClasses) && 
           !hasClosestWithId(element, "locaHeader")) {
-        const parentElement = element.closest("button, a");
+        var parentElement = element.closest("button, a");
         if (parentElement) {
           parentElement.setAttribute("data-gtm-auto-click", "");
-          const labelValue = getLabelValue(parentElement);
+          var labelValue = getLabelValue(parentElement);
           if (labelValue) {
             parentElement.setAttribute(
               "data-gtm-auto-body",
@@ -143,7 +143,7 @@ document.querySelectorAll(clickSelectors.join(",")).forEach((element) => {
           }
         } else if (element.tagName.toLowerCase() === 'li' || element.tagName.toLowerCase() === 'input' || element.classList.contains('swiper-slide')) {
           element.setAttribute("data-gtm-auto-click", "");
-          const labelValue = getLabelValue(element);
+          var labelValue = getLabelValue(element);
           if (labelValue) {
             element.setAttribute(
               "data-gtm-auto-body",
@@ -154,20 +154,22 @@ document.querySelectorAll(clickSelectors.join(",")).forEach((element) => {
       }
     }
   } catch (error) {
-    console.error(`Error processing clickSelectors: ${error.message}`);
+    console.error("Error processing clickSelectors: " + error.message);
   }
+}
+
+document.querySelectorAll(clickSelectors.join(",")).forEach(function(element) {
+  processClickSelectors(element);
 });
 
-document.querySelectorAll(".swiper-slide:not([data-gtm-visibility]):not([data-gtm-auto-view])"+
-":not(.popup-layer):not(.bottomsheet):not(.bottom-modal):not(.default-modal):not(.menu)"+
-":not(#locaHeader)").forEach((element) => {
+function processSwiperSlides(element) {
   try {
     if (!hasClosestWithPrefix(element, "data-gtm-visibility")) {
-      const excludeClasses = ['popup-layer', 'bottomsheet', 'bottom-modal', 'default-modal', 'menu'];
+      var excludeClasses = ['popup-layer', 'bottomsheet', 'bottom-modal', 'default-modal', 'menu'];
       if (!hasClosestWithClass(element, excludeClasses) && 
           !hasClosestWithId(element, "locaHeader")) {
         element.setAttribute("data-gtm-auto-view", "");
-        const labelValue = getLabelValue(element);
+        var labelValue = getLabelValue(element);
         if (labelValue) {
           element.setAttribute(
             "data-gtm-auto-body",
@@ -177,6 +179,12 @@ document.querySelectorAll(".swiper-slide:not([data-gtm-visibility]):not([data-gt
       }
     }
   } catch (error) {
-    console.error(`Error processing swiper-slide elements: ${error.message}`);
+    console.error("Error processing swiper-slide elements: " + error.message);
   }
+}
+
+document.querySelectorAll(".swiper-slide:not([data-gtm-visibility]):not([data-gtm-auto-view])"+
+":not(.popup-layer):not(.bottomsheet):not(.bottom-modal):not(.default-modal):not(.menu)"+
+":not(#locaHeader)").forEach(function(element) {
+  processSwiperSlides(element);
 });
