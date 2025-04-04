@@ -1,4 +1,4 @@
-// data-gtm-click 또는 data-gtm-visibility가 있는 요소를 제외하기 위한 함수
+
 function hasClosestWithPrefix(element, prefix) {
   try {
     return element.closest("[" + prefix + "]") !== null;
@@ -8,7 +8,6 @@ function hasClosestWithPrefix(element, prefix) {
   }
 }
 
-// 특정 클래스를 가진 가장 가까운 부모 요소를 찾는 함수
 function hasClosestWithClass(element, classNames) {
   try {
     for (var i = 0; i < classNames.length; i++) {
@@ -22,7 +21,6 @@ function hasClosestWithClass(element, classNames) {
   return false;
 }
 
-// 특정 ID를 가진 가장 가까운 부모 요소를 찾는 함수
 function hasClosestWithId(element, id) {
   try {
     return element.closest("#" + id) !== null;
@@ -32,7 +30,15 @@ function hasClosestWithId(element, id) {
   }
 }
 
-// Helper function to get the label value based on specified conditions
+function applyTransformations(text, patterns) {
+  if (!text) return "";
+  var transformedText = text;
+  patterns.forEach(function (pattern) {
+    transformedText = transformedText.replace(new RegExp(pattern, 'g'), '|');
+  });
+  return transformedText;
+}
+
 function getLabelValue(element) {
   var value = "";
   try {
@@ -41,15 +47,6 @@ function getLabelValue(element) {
     var svgQuestionCheck = element.querySelector('svg[xmlns="http://www.w3.org/2000/svg"][fill="none"][viewBox="0 0 20 20"][class="w-6 h-6"]');
     var svgBackCheck = element.querySelector('svg[xmlns="http://www.w3.org/2000/svg"] path[d="m10 20-9-8 9-8"]');
     var svgShareCheck = element.querySelector('svg[xmlns="http://www.w3.org/2000/svg"] path[d="M18 8a3 3 0 1 0 0-6 3 3 0 0 0 0 6ZM6 15a3 3 0 1 0 0-6 3 3 0 0 0 0 6ZM18 22a3 3 0 1 0 0-6 3 3 0 0 0 0 6ZM8.59 13.51l6.83 3.98M15.41 6.51l-6.82 3.98"]');
-
-    function applyTransformations(text, patterns) {
-      if (!text) return "";
-      var transformedText = text;
-      patterns.forEach(function (pattern) {
-        transformedText = transformedText.replace(new RegExp(pattern, 'g'), '|');
-      });
-      return transformedText;
-    }
 
     var patterns = ['\\n', '<br\\s*\\/?>', '\\t', '\\n\\n', '\\n\\n\\n'];
 
@@ -158,10 +155,6 @@ function processClickSelectors(element) {
   }
 }
 
-document.querySelectorAll(clickSelectors.join(",")).forEach(function(element) {
-  processClickSelectors(element);
-});
-
 function processSwiperSlides(element) {
   try {
     if (!hasClosestWithPrefix(element, "data-gtm-visibility")) {
@@ -183,8 +176,14 @@ function processSwiperSlides(element) {
   }
 }
 
-document.querySelectorAll(".swiper-slide:not([data-gtm-visibility]):not([data-gtm-auto-view])"+
-":not(.popup-layer):not(.bottomsheet):not(.bottom-modal):not(.default-modal):not(.menu)"+
-":not(#locaHeader)").forEach(function(element) {
-  processSwiperSlides(element);
-});
+setTimeout(function() {
+  document.querySelectorAll(clickSelectors.join(",")).forEach(function(element) {
+    processClickSelectors(element);
+  });
+
+  document.querySelectorAll(".swiper-slide:not([data-gtm-visibility]):not([data-gtm-auto-view])"+
+  ":not(.popup-layer):not(.bottomsheet):not(.bottom-modal):not(.default-modal):not(.menu)"+
+  ":not(#locaHeader)").forEach(function(element) {
+    processSwiperSlides(element);
+  });
+}, 300); // Adjust the timeout duration as needed
