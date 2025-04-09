@@ -157,11 +157,11 @@ function processClickSelectors(element) {
 
 function processSwiperSlides(element) {
   try {
-    if (!hasClosestWithPrefix(element, "data-gtm-visibility")) {
+    if (!hasClosestWithPrefix(element, "data-gtm-click")) {
       var excludeClasses = ['popup-layer', 'bottomsheet', 'bottom-modal', 'default-modal', 'menu'];
       if (!hasClosestWithClass(element, excludeClasses) && 
           !hasClosestWithId(element, "locaHeader")) {
-        element.setAttribute("data-gtm-auto-view", "");
+        element.setAttribute("data-gtm-auto-click", "");
         var labelValue = getLabelValue(element);
         if (labelValue) {
           element.setAttribute(
