@@ -137,7 +137,7 @@
           var autoSectionData = {};
 
           if (autoParent) {
-            autoSectionData = JSON.parse(autoParent.getAttribute('data-gtm-section') || '{}');
+            autoSectionData = JSON.parse(autoParent.getAttribute('data-gtm-body') || '{}');
             var sectionParent = autoParent.closest('[data-gtm-section-find-continue]');
 
             while (sectionParent) {
