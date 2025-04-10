@@ -1023,6 +1023,10 @@
       // 헬퍼 함수: sectionParams 매핑 규칙
       sectionMappingRules: function() {
         return [
+          { source: 'ep_category', target: 'ep_category' },
+          { source: 'ep_action', target: 'ep_action' },
+          { source: 'ep_label', target: 'ep_label' },
+          { source: 'label', target: 'ep_label_text' },
           { source: 'label1', target: 'ep_category_depth1' },
           { source: 'label2', target: 'ep_category_depth2' },
           { source: 'label3', target: 'ep_category_depth3' },
