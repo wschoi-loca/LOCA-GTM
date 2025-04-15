@@ -81,6 +81,7 @@
         var popupMessage = element.innerText;
 
         var eventData = {
+          auto_tag_yn: "Y",
           ep_category: "popup_view",
           ep_action: "노출",
           ep_label: popupMessage || '',
@@ -120,6 +121,7 @@
 
           var popupButtonData = JSON.parse(element.closest('[data-gtm-popup-click]').getAttribute('data-gtm-popup-body') || '{}');
           var eventData = Object.assign({}, popupSectionData, popupButtonData, {
+            auto_tag_yn: "Y",
             ep_category: "popup_click",
             ep_action: "클릭",
             ep_label: popupButtonData.popup_button || ''
@@ -155,6 +157,7 @@
 
           var autoButtonData = JSON.parse(element.closest('[data-gtm-auto-click]').getAttribute('data-gtm-auto-body') || '{}');
           var eventData = Object.assign({}, autoSectionData, autoButtonData, {
+            auto_tag_yn: "Y",
             ep_category: "cts_click",
             ep_action: "클릭",
             ep_label: autoButtonData.label || ''
