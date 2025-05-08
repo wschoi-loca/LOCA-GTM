@@ -759,6 +759,24 @@
         var frame = utils.determineAppType(document.location.pathname);
         var urlParams = utils.urlParamsToObject();
 
+        // CMS 감지 키 리스트
+        var primaryKeys = [
+            'evtNo', 'ctgry', 'badgeId', 'shopNo', 'evtMgrpCd', 
+            'planShopNo', 'evnBultSeq', 'goodsNo', 
+            'vtCdKndC', 'brandNo', 'shopNo', 'dispCtgNo'
+        ];
+
+        // epPrimaryParams 생성
+        var epPrimaryParamsArray = [];
+        primaryKeys.forEach(function(key) {
+            if (urlParams.hasOwnProperty(key)) {
+                epPrimaryParamsArray.push(key + '=' + urlParams[key]);
+            }
+        });
+
+        // epPrimaryParams 문자열로 변환
+        var epPrimaryParams = epPrimaryParamsArray.join('&');
+
         // pageParams 객체 생성 및 반환
         return {
           ep_cd77_cur_page_title: pathTitle,
@@ -775,7 +793,11 @@
           ep_cd44_ex_act_id: urlParams.ex_act_id,
           ep_cd45_ex_act_rpl_id: urlParams.ex_act_rpl_id,
           ep_cd56_cms_cno: urlParams.cmscno,
+          ep_pid: urlParams.pid,
+          ep_af_channel: urlParams.af_channel,
+          ep_af_ad: urlParams.af_ad,
           ep_cd123_cur_page_fullurl: fullURL,
+          ep_primary_params: epPrimaryParams,
           //ep_cd64_card_apply_code: urlParams.vtCdKndC,
         };
       },
