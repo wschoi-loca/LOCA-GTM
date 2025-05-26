@@ -461,46 +461,87 @@
           }
         });
       },
-      channelMapping : function (url) {
-        var urlMapping = {
-          "www.lottecard.co.kr": "PC_WEB",
-          "corp2.lottecard.co.kr": "PC",
-          "corp.lottecard.co.kr": "PC",
-          "dwww.lottecard.co.kr": "PC_TEST",
-          "dcorp2.lottecard.co.kr": "PC_TEST",
-          "dcorp.lottecard.co.kr": "PC_TEST",
-          "dwww2.lottecard.co.kr": "PC_TEST",
-          "m.lottecard.co.kr": "MO_WEB",
-          "dmo2.lottecard.co.kr": "MO_TEST",
-          "dars.lottecard.co.kr": "MO_DARS",
-          "mweb2.lottecard.co.kr": "APP",
-          "mbt.lottecard.co.kr": "APP",
-          "app-card.lottecard.co.kr": "APP",
-          "thing.lottecard.co.kr": "APP",
-          "locashop.lottecard.co.kr": "APP",
-          "moweb3.lottecard.co.kr": "APP",
-          "mc2.lottecard.co.kr":  "APP",
-          "mc.lottecard.co.kr":  "APP",
-          "mcapp.lottecard.co.kr":  "APP",
-          "trip.lottecard.co.kr":  "APP",
-          "dmoweb2.lottecard.co.kr": "APP_TEST",
-          "dmbt.lottecard.co.kr": "APP_TEST",
-          "m-thing-dev.lottecard.co.kr": "APP_TEST",
-          "dlocashop.lottecard.co.kr": "APP_TEST",
-          "tlocashop.lottecard.co.kr": "APP_TEST",
-          "dmoweb3.lottecard.co.kr": "APP_TEST",
-          "cmweb.lottecard.co.kr": "APP_TEST",
-          "cmweb2.lottecard.co.kr": "APP_TEST",
-          "cmweb3.lottecard.co.kr": "APP_TEST",
-          "clocashop.lottecard.co.kr": "APP_TEST",
-          "dmc2.lottecard.co.kr":  "APP_TEST",
-          "dmc.lottecard.co.kr":  "APP_TEST",
-          "dmcapp.lottecard.co.kr":  "APP_TEST",
-          "dtrip.lottecard.co.kr":  "APP_TEST",
-        };
-  
-        return urlMapping[url] || "APP_undefinedChannel";
-      },
+      channelMapping: function(url, userAgent) {
+      // UserAgent가 없는 경우 기본값 설정
+      userAgent = userAgent || "";
+      
+      // 특정 테스트 도메인 처리 (dlocashop, tlocashop, clocashop)
+      if (url === "dlocashop.lottecard.co.kr" || 
+          url === "tlocashop.lottecard.co.kr" || 
+          url === "clocashop.lottecard.co.kr") {
+        
+        // LP_APP이 포함되어 있으면 APP_TEST로 분류
+        if (userAgent.indexOf("LP_APP") > -1) {
+          return "APP_TEST";
+        }
+        
+        // 모바일 디바이스 체크
+        var isMobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini|Mobile|mobile|CriOS/i.test(userAgent);
+        
+        if (isMobile) {
+          return "MO_TEST";
+        } else {
+          return "PC_TEST";
+        }
+      }
+      
+      // 일반 locashop 도메인 처리
+      if (url.indexOf("locashop") > -1 && url !== "dlocashop.lottecard.co.kr" && 
+          url !== "tlocashop.lottecard.co.kr" && url !== "clocashop.lottecard.co.kr") {
+        
+        // LP_APP이 포함되어 있으면 APP으로 분류
+        if (userAgent.indexOf("LP_APP") > -1) {
+          return "APP";
+        }
+        
+        // 모바일 디바이스 체크
+        var isMobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini|Mobile|mobile|CriOS/i.test(userAgent);
+        
+        if (isMobile) {
+          return "MO_WEB";
+        } else {
+          return "PC";
+        }
+      }
+      
+      // 기존 URL 매핑 로직
+      var urlMapping = {
+        "www.lottecard.co.kr": "PC_WEB",
+        "corp2.lottecard.co.kr": "PC",
+        "corp.lottecard.co.kr": "PC",
+        "dwww.lottecard.co.kr": "PC_TEST",
+        "dcorp2.lottecard.co.kr": "PC_TEST",
+        "dcorp.lottecard.co.kr": "PC_TEST",
+        "dwww2.lottecard.co.kr": "PC_TEST",
+        "m.lottecard.co.kr": "MO_WEB",
+        "dmo2.lottecard.co.kr": "MO_TEST",
+        "dars.lottecard.co.kr": "MO_DARS",
+        "mweb2.lottecard.co.kr": "APP",
+        "mbt.lottecard.co.kr": "APP",
+        "app-card.lottecard.co.kr": "APP",
+        "thing.lottecard.co.kr": "APP",
+        "locashop.lottecard.co.kr": "APP", // UserAgent 기반으로 분류
+        "moweb3.lottecard.co.kr": "APP",
+        "mc2.lottecard.co.kr": "APP",
+        "mc.lottecard.co.kr": "APP",
+        "mcapp.lottecard.co.kr": "APP",
+        "trip.lottecard.co.kr": "APP",
+        "dmoweb2.lottecard.co.kr": "APP_TEST",
+        "dmbt.lottecard.co.kr": "APP_TEST",
+        "m-thing-dev.lottecard.co.kr": "APP_TEST",
+        // dlocashop, tlocashop, clocashop은 위의 로직에서 처리
+        "dmoweb3.lottecard.co.kr": "APP_TEST",
+        "cmweb.lottecard.co.kr": "APP_TEST",
+        "cmweb2.lottecard.co.kr": "APP_TEST",
+        "cmweb3.lottecard.co.kr": "APP_TEST",
+        "dmc2.lottecard.co.kr": "APP_TEST",
+        "dmc.lottecard.co.kr": "APP_TEST",
+        "dmcapp.lottecard.co.kr": "APP_TEST",
+        "dtrip.lottecard.co.kr": "APP_TEST",
+      };
+
+      return urlMapping[url] || "APP_undefinedChannel";
+    },
       deepCopy: function deepCopy(obj) {
         if (obj === null || typeof obj !== 'object') {
           return obj;
@@ -1257,7 +1298,7 @@
         var _gtm = window._gtm || {};
         var sha512Cno = user.sha512_cno || utils.getCookie('gaUserCNO') || zeroValue;
 
-        var channel = utils.channelMapping(window.location.hostname);
+        var channel = utils.channelMapping(window.location.hostname, navigator.userAgent);
         var login_dtti = user.lgnDtti || undefined;
         var session_id2 = sha512Cno.substring(100) + '|' + channel + '|' + login_dtti;
 
