@@ -50,11 +50,24 @@
         var svgShareCheck = element.querySelector('svg[xmlns="http://www.w3.org/2000/svg"] path[d="M18 8a3 3 0 1 0 0-6 3 3 0 0 0 0 6ZM6 15a3 3 0 1 0 0-6 3 3 0 0 0 0 6ZM18 22a3 3 0 1 0 0-6 3 3 0 0 0 0 6ZM8.59 13.51l6.83 3.98M15.41 6.51l-6.82 3.98"]');
     
         var patterns = ['\\n', '<br\\s*\\/?>', '\\t', '\\n\\n', '\\n\\n\\n'];
-    
+        
         var conditions = [
           function () {
-            var altElement = element.querySelector("[alt]");
-            return altElement ? applyTransformations(altElement.getAttribute("alt"), patterns) : "";
+            var altText = "";
+              // 1. element 자체의 alt 속성 확인
+              if (element.hasAttribute("alt")) {
+                altText = element.getAttribute("alt");
+              }
+              
+              // 2. element 자체에 alt 속성이 없거나 비어있다면, 자식 요소에서 검색
+              //    (주의: element.getAttribute("alt")는 속성이 존재하지만 값이 비어있으면 ""를 반환)
+              if (!altText) { // altText가 null, undefined, "" 일 경우 자식 검색
+                var childWithAlt = element.querySelector("[alt]");
+                if (childWithAlt) {
+                  altText = childWithAlt.getAttribute("alt");
+                }
+              }
+              return altText ? applyTransformations(altText, patterns) : "";
           },
           function () { return applyTransformations(element.innerText, patterns); },
           function () { return applyTransformations(element.textContent, patterns); },
