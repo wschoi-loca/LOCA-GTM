@@ -525,7 +525,7 @@
         "mc2.lottecard.co.kr": "APP",
         "mc.lottecard.co.kr": "APP",
         "mcapp.lottecard.co.kr": "APP",
-        "trip.lottecard.co.kr": "APP",
+        "locatravel.lottecard.co.kr": "APP",
         "dmoweb2.lottecard.co.kr": "APP_TEST",
         "dmbt.lottecard.co.kr": "APP_TEST",
         "m-thing-dev.lottecard.co.kr": "APP_TEST",
@@ -1296,7 +1296,7 @@
         var zeroValue = Array(128 + 1).join('0'); // '0'.repeat(128) 대체
         var user = window._gtm && window._gtm.user ? window._gtm.user : {};
         var _gtm = window._gtm || {};
-        var sha512Cno = user.sha512_cno || utils.getCookie('gaUserCNO') || zeroValue;
+        var sha512Cno = user.sha512_cno || user.loginId || utils.getCookie('gaUserCNO') || zeroValue;
 
         var channel = utils.channelMapping(window.location.hostname, navigator.userAgent);
         var login_dtti = user.lgnDtti || undefined;
