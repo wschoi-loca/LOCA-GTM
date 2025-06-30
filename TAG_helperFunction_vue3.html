@@ -1292,26 +1292,48 @@
 
       // 헬퍼 함수: 유저 데이터 가져오기
       getUserData: function() {
-
         var zeroValue = Array(128 + 1).join('0'); // '0'.repeat(128) 대체
         var user = window._gtm && window._gtm.user ? window._gtm.user : {};
         var _gtm = window._gtm || {};
-        var sha512Cno = user.sha512_cno || user.loginId || utils.getCookie('gaUserCNO') || zeroValue;
+
+        var sha512Cno;
+        var login_dtti;
+        var memberType;
+        var is_login = _gtm.isLogin ? '1' : (user.isLogin ? '1' : 'U');
+        var login_type;
+
+        // locashop URL 분기 처리
+        if (window.location.href.indexOf('locashop') > -1) {
+          sha512Cno = user.SHA512_CNO || zeroValue;
+          login_dtti = user.LGN_DTTI || undefined;
+          memberType = user.MBR_GB_CD || undefined;
+
+          // login_type을 if-else if 문으로 다시 변경
+          if (user.LGN_METHOD && user.SNS_LOGIN_PROVIDER) {
+            login_type = user.LGN_METHOD + '|' + user.SNS_LOGIN_PROVIDER;
+          } else if (user.LGN_METHOD) {
+            login_type = user.LGN_METHOD;
+          } else if (user.SNS_LOGIN_PROVIDER) {
+            login_type = user.SNS_LOGIN_PROVIDER;
+          } else {
+            login_type = undefined;
+          }
+
+        } else {
+          sha512Cno = user.sha512_cno || user.loginId || utils.getCookie('gaUserCNO') || zeroValue;
+          login_dtti = user.lgnDtti || undefined;
+          memberType = user.mbrType ? (user.mbrType === "MBR" ? "정회원" : "준회원") : undefined;
+          login_type = user.lgnType;
+        }
 
         var channel = utils.channelMapping(window.location.hostname, navigator.userAgent);
-        var login_dtti = user.lgnDtti || undefined;
         var session_id2 = sha512Cno.substring(100) + '|' + channel + '|' + login_dtti;
 
         var sha512Cno_1 = sha512Cno.substring(0, 100);
         var sha512Cno_2 = sha512Cno.substring(100);
 
-        var memberType = user.mbrType ? (user.mbrType === "MBR" ? "정회원" : "준회원") : undefined;
-        var is_login = _gtm.isLogin ? '1' : (user.isLogin ? '1' : 'U'); 
-        var login_type = user.lgnType;
-        
-
-        if(sha512Cno !== zeroValue && sha512Cno.length === 128 && utils.getCookie('gaUserCNO') !== sha512Cno) {
-            utils.setCookie('gaUserCNO', sha512Cno, 30);
+        if (sha512Cno !== zeroValue && sha512Cno.length === 128 && utils.getCookie('gaUserCNO') !== sha512Cno) {
+          utils.setCookie('gaUserCNO', sha512Cno, 30);
         }
 
         return {
@@ -1320,12 +1342,12 @@
           ep_cd54_lgn_session_id1: sha512Cno_1,
           ep_cd55_lgn_session_id2: session_id2,
           ep_cd120_user_id1: sha512Cno_1,
-          ep_cd121_user_id2: sha512Cno_2 ,
+          ep_cd121_user_id2: sha512Cno_2,
           ep_cd4_lgn_yn: is_login,
           ep_cd5_lgn_type: login_type,
           memberType: memberType,
           user_id: sha512Cno,
-        }
+        };
       },
 
       // 헬퍼 함수: 데이터 병합
