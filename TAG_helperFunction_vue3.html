@@ -1223,19 +1223,29 @@
           { source: 'auto_tag_yn', target: 'ep_auto_tag_yn' },
         ];
       },
-      // 헬퍼 함수: 이커머스 이벤트 여부 확인
-      isEcommerceEvent: function(eventType) {
-        var ecommerceEvents = [
-          'view-item-list', 'select-item', 'view-item',
-          'add-to-cart', 'begin-checkout', 'purchase',
-          'refund', 'etc', 'select-item2',
-        ];
-        return ecommerceEvents.indexOf(eventType) !== -1;
+      
+      // 헬퍼 함수: 이벤트 이름 생성
+      generateEventName: function(eventType, data, isEcommerceEvent) {
+        // data.sectionParams나 data.eventParams 객체에 popup 관련 속성이 하나라도 존재하면 'popup'으로 처리
+        var isPopup = (
+          (data.sectionParams && (data.sectionParams.is_popup || data.sectionParams.popup_message)) ||
+          (data.eventParams && data.eventParams.popup_message)
+        ) ? 'popup' : 'cts';
+
+        var baseName = isEcommerceEvent
+          ? eventType
+          : isPopup + '_' + (eventType === 'visibility' ? 'view' : eventType);
+
+        return baseName.replace(/-/g, '_');
       },
 
       // 헬퍼 함수: 이벤트 이름 생성
       generateEventName: function(eventType, data, isEcommerceEvent) {
         var isPopup = data.sectionParams && data.sectionParams.is_popup ? 'popup' : 'cts';
+        var isPopup = data.sectionParams && data.sectionParams.popup_message ? 'popup' : 'cts';
+        var isPopup = data.eventParams && data.eventParams.popup_message ? 'popup' : 'cts';
+
+
         var baseName = isEcommerceEvent
           ? eventType
           : isPopup + '_' + (eventType === 'visibility' ? 'view' : eventType);
