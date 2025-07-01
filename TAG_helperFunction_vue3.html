@@ -1311,10 +1311,10 @@
         var login_type;
 
         // locashop URL 분기 처리
-        if (window.location.href.indexOf('locashop') > -1) {
-          sha512Cno = user.SHA512_CNO || zeroValue;
-          login_dtti = user.LGN_DTTI || undefined;
-          memberType = user.MBR_GB_CD || undefined;
+        if (window.location.href.indexOf('locashop') > -1 ) {
+          sha512Cno = user.SHA512_CNO || user.sha512_cno || user.loginId || utils.getCookie('gaUserCNO') || zeroValue;
+          login_dtti = user.LGN_DTTI || user.lgnDtti || undefined;
+          memberType = user.MBR_GB_CD || user.mbrType ? (user.mbrType === "MBR" ? "정회원" : "준회원") : undefined;
 
           // login_type을 if-else if 문으로 다시 변경
           if (user.LGN_METHOD && user.SNS_LOGIN_PROVIDER) {
@@ -1323,7 +1323,10 @@
             login_type = user.LGN_METHOD;
           } else if (user.SNS_LOGIN_PROVIDER) {
             login_type = user.SNS_LOGIN_PROVIDER;
-          } else {
+          } else if (user.lgnType) {
+            login_type  = user.lgnType;
+          }
+          else {
             login_type = undefined;
           }
 
