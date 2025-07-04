@@ -269,7 +269,8 @@
           '\\n': '|',   // '\n'을 '|'로 대체
           '<br>': '|', // '<br>'을 '|'로 대체
           '\\t': '|', 
-          '\\\\t': '|', 
+          '\\\\t': '|',
+          '@': '_@_',
         };
 
         // 객체의 키-값 쌍을 순회하면서 문자열 값의 경우 대체 작업 수행
@@ -1312,7 +1313,7 @@
 
         // locashop URL 분기 처리
         if (window.location.href.indexOf('locashop') > -1 ) {
-          sha512Cno = user.SHA512_CNO || user.sha512_cno || user.loginId || utils.getCookie('gaUserCNO') || zeroValue;
+          sha512Cno = user.SHA512_CNO || user.sha512_cno || utils.getCookie('gaUserCNO') || zeroValue;
           login_dtti = user.LGN_DTTI || user.lgnDtti || undefined;
           memberType = user.MBR_GB_CD || user.mbrType ? (user.mbrType === "MBR" ? "정회원" : "준회원") : undefined;
 
@@ -1331,7 +1332,7 @@
           }
 
         } else {
-          sha512Cno = user.sha512_cno || user.loginId || utils.getCookie('gaUserCNO') || zeroValue;
+          sha512Cno = user.sha512_cno || utils.getCookie('gaUserCNO') || zeroValue;
           login_dtti = user.lgnDtti || undefined;
           memberType = user.mbrType ? (user.mbrType === "MBR" ? "정회원" : "준회원") : undefined;
           login_type = user.lgnType;
@@ -1360,7 +1361,7 @@
           user_id: sha512Cno,
         };
       },
-
+      
       // 헬퍼 함수: 데이터 병합
       mergeParams: function(objects) {
         var result = {};
