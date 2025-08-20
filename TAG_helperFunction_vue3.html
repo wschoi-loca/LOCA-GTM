@@ -837,7 +837,7 @@
           ep_cd44_ex_act_id: urlParams.ex_act_id,
           ep_cd45_ex_act_rpl_id: urlParams.ex_act_rpl_id,
           ep_cd56_cms_cno: urlParams.cmscno,
-          af_pid: urlParams.pid || urlParams[';pid'] || urlParams.utm_campaign,
+          af_pid: urlParams.pid || urlParams[';pid'] || urlParams.utm_campaign || 'organic|'+document.referrer,
           af_channel: urlParams.af_channel || urlParams.utm_source,
           af_ad: urlParams.af_ad || urlParams.utm_medium,
           af_c: urlParams.c,
