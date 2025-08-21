@@ -803,19 +803,37 @@
         var frame = utils.determineAppType(document.location.pathname);
         var urlParams = utils.urlParamsToObject();
 
+        // referrer 디코딩
+        var referrerRaw = document.referrer || '';
+        var referrer = referrerRaw ? utils.utf8Decode(referrerRaw) : '';
+
+        // referrer 도메인이 lottecard.co.kr(또는 서브도메인)이면 false(=undefined 취급)
+        var referrerHost = '';
+        try {
+          referrerHost = referrerRaw ? new URL(referrerRaw).hostname : '';
+        } catch (e) {
+          referrerHost = '';
+        }
+        var isLottecardReferrer = (referrerHost === 'lottecard.co.kr') || referrerHost.endsWith('.lottecard.co.kr');
+
+        // organicRef 우선순위: urlParams.referrer > document.referrer(단, lottecard.co.kr은 제외)
+        var organicFromParam = urlParams.referrer ? ('organic|' + urlParams.referrer) : undefined;
+        var organicFromReferrer = (!isLottecardReferrer && referrer) ? ('organic|' + referrer) : undefined;
+        var organicRef = organicFromParam || organicFromReferrer;
+
         // CMS 감지 키 리스트
         var primaryKeys = [
-            'evtNo', 'ctgry', 'badgeId', 'shopNo', 'evtMgrpCd', 
-            'planShopNo', 'evnBultSeq', 'goodsNo', 
-            'vtCdKndC', 'brandNo', 'shopNo', 'dispCtgNo'
+          'evtNo', 'ctgry', 'badgeId', 'shopNo', 'evtMgrpCd',
+          'planShopNo', 'evnBultSeq', 'goodsNo',
+          'vtCdKndC', 'brandNo', 'shopNo', 'dispCtgNo'
         ];
 
         // epPrimaryParams 생성
         var epPrimaryParamsArray = [];
         primaryKeys.forEach(function(key) {
-            if (urlParams.hasOwnProperty(key)) {
-                epPrimaryParamsArray.push(key + '=' + urlParams[key]);
-            }
+          if (urlParams.hasOwnProperty(key)) {
+            epPrimaryParamsArray.push(key + '=' + urlParams[key]);
+          }
         });
 
         // epPrimaryParams 문자열로 변환
@@ -837,7 +855,7 @@
           ep_cd44_ex_act_id: urlParams.ex_act_id,
           ep_cd45_ex_act_rpl_id: urlParams.ex_act_rpl_id,
           ep_cd56_cms_cno: urlParams.cmscno,
-          af_pid: urlParams.pid || urlParams[';pid'] || urlParams.utm_campaign || 'organic|'+document.referrer,
+          af_pid: urlParams.pid || urlParams[';pid'] || urlParams.utm_campaign || organicRef,
           af_channel: urlParams.af_channel || urlParams.utm_source,
           af_ad: urlParams.af_ad || urlParams.utm_medium,
           af_c: urlParams.c,
