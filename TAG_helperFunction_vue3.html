@@ -817,7 +817,7 @@
         var isLottecardReferrer = (referrerHost === 'lottecard.co.kr') || referrerHost.endsWith('.lottecard.co.kr');
 
         // organicRef 우선순위: urlParams.referrer > document.referrer(단, lottecard.co.kr은 제외)
-        var organicFromParam = urlParams.referrer ? ('organic|' + urlParams.referrer) : undefined;
+        var organicFromParam = urlParams.referrer ? ('organic|' + utils.utf8Decode(urlParams.referrer)) : undefined;
         var organicFromReferrer = (!isLottecardReferrer && referrer) ? ('organic|' + referrer) : undefined;
         var organicRef = organicFromParam || organicFromReferrer;
 
